@@ -1,0 +1,90 @@
+html,body,div,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,p,blockquote{margin:0;padding:0;}
+img,body,html{border:0;}
+h1,h2,h3,h4,h5,h6{font-size:100%;}
+form > fieldset{border:0;}
+
+body
+{
+	font-family: 'Poppins', sans-serif;
+	font-size: 16px;
+	color: #333444;
+	line-height: 1.9;
+}
+
+.color-blue-light
+{
+	color: #6dcaf3;
+}
+
+a
+{
+	text-decoration: none;
+	color: #27459b;
+}
+
+a:hover
+{
+	text-decoration: none;
+	color: #6dcaf3;
+}
+
+p
+{
+	font-size: 16px;
+}
+
+h1{font-size:38px}
+h2{font-size:32px}
+h3{font-size:28px}
+h4{font-size:26px}
+h5{font-size:24px}
+h6{font-size:22px}
+
+header
+{
+	padding: 20px 0;
+}
+
+.width-content
+{
+	max-width: 1024px;
+	margin: auto;
+}
+
+.logo
+{
+	display: inline-block;
+	vertical-align: middle;
+}
+
+.logo img
+{
+	display: block;
+	max-width: 80px;
+	max-height: 80px;
+}
+
+.menu
+{
+	display: inline-block;
+	vertical-align: middle;
+	font-size: 16px;
+	font-weight: 500;
+}
+
+.head-menu
+{
+	display: inline-block;
+	font-size: 16px;
+}
+
+.head-menu-element
+{
+	display: inline-block;
+	margin: 5px 15px;
+}
+
+.main-content
+{
+	padding: 10px 0;
+}
