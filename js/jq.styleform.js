@@ -1,13 +1,12 @@
-$.widget( "Imperial.styleForm", {
+$.widget( "SuperForm.superform", {
 	options: {
         checkbox: {
 			use: true,
 			hover:false,
-			disabled: false,
 			wrapClass: true,
 			inputClass: null,
 			wrapTitle: true,
-			ignoredClass:'i-ch-ignored',
+			ignoredClass:'sf-ch-ignored',
 			//calbacks
 			onEnter:null,
 			onLeave:null,
@@ -48,7 +47,7 @@ $.widget( "Imperial.styleForm", {
 			inputClass: null,
 			wrapTitle: null,
 			onlyClass: null,
-			ignoredClass:'i-ignored-select',
+			ignoredClass:'sf-ignored-select',
 			minWidth: true,
 			maxListElement: 12,
 			absolute: false,
@@ -79,15 +78,15 @@ $.widget( "Imperial.styleForm", {
 		var options = JSON.parse(JSON.stringify($this.options));
 		
 		if(options.checkbox.use)
-			$this.element.find('input[type="checkbox"]').checkboxStyle(options.checkbox);
+			$this.element.find('input[type="checkbox"]').superCheckbox(options.checkbox);
 		if(options.radio.use)
 			$this.element.find('input[type="radio"]').radioStyle(options.radio);
 		
 		if(options.select.use)
 		{	
-			$this.element.find('select').not('.i-s-styled').each(function()
+			$this.element.find('select').not('.sf-s-styled').each(function()
 			{
-				if($(this).hasClass('i-s-initialized'))
+				if($(this).hasClass('sf-s-initialized'))
 				{
 					$(this).selectStyle('destroy');
 				}
@@ -104,24 +103,24 @@ $.widget( "Imperial.styleForm", {
 		{
 			if(options.checkbox.use)
 			{
-//				$this.element.find('input.i-ch-styled[type="checkbox"]').checkboxStyle('update');
+//				$this.element.find('input.sf-ch-styled[type="checkbox"]').superCheckbox('update');
 			}
 			
 			if(options.checkbox.use)
 			{
-				$this.element.find('input[type="checkbox"]').not('.i-ch-styled').checkboxStyle(options.checkbox);
+				$this.element.find('input[type="checkbox"]').not('.sf-ch-styled').superCheckbox(options.checkbox);
 			}
 			
 			if(options.radio.use)
 			{
-				$this.element.find('input[type="radio"]').not('.i-r-styled').radioStyle(options.radio);
+				$this.element.find('input[type="radio"]').not('.sf-r-styled').radioStyle(options.radio);
 			}
 			
 			if(options.select.use)
 			{			
-				$this.element.find('select').not('.i-s-styled').not("."+$this.options.select.ignoredClass).each(function()
+				$this.element.find('select').not('.sf-s-styled').not("."+$this.options.select.ignoredClass).each(function()
 				{
-					if($(this).hasClass('i-s-initialized') && typeof($(this).data('ImperialSelectStyle')) != 'undefined')
+					if($(this).hasClass('sf-s-initialized') && typeof($(this).data('SuperFormSelectStyle')) != 'undefined')
 						$(this).selectStyle('destroy');
 					
 					$(this).selectStyle(options.select);
@@ -130,13 +129,13 @@ $.widget( "Imperial.styleForm", {
 			
 			if(options.fileUploader.use)
 			{
-				$this.element.find('input[type="file"]').not('.i-s-styled').fileUploaderStyle(options.fileUploader);
+				$this.element.find('input[type="file"]').not('.sf-s-styled').fileUploaderStyle(options.fileUploader);
 			}
 		});
 		
-		setInterval(function(){
-			$(document).trigger('domChange.'+$this.uuid);
-		}, 50);
+//		setInterval(function(){
+//			$(document).trigger('domChange.'+$this.uuid);
+//		}, 50);
 		
 		if(this.element.is('form'))
 			this._initValidationAdditionalEvent(this.element);
@@ -146,7 +145,7 @@ $.widget( "Imperial.styleForm", {
 	
 	_destroy: function(){
 		if(this.options.checkbox.use)
-			this.element.find('input[type="checkbox"]').checkboxStyle("destroy");
+			this.element.find('input[type="checkbox"]').superCheckbox("destroy");
 		if(this.options.radio.use)
 			this.element.find('input[type="radio"]').radioStyle("destroy");
 		if(this.options.select.use)
@@ -169,20 +168,20 @@ $.widget( "Imperial.styleForm", {
 						if($(error).hasClass(validator.settings.errorClass))
 						{
 							if($(error).is('select'))
-								$(error).closest('.i-s-wrapper').addClass(validator.settings.errorClass);
+								$(error).closest('.sf-s-wrapper').addClass(validator.settings.errorClass);
 							else if($(error).is(':radio'))
-								$(error).closest('.i-r-wrapper').addClass(validator.settings.errorClass);
+								$(error).closest('.sf-r-wrapper').addClass(validator.settings.errorClass);
 							else if($(error).is(':checkbox'))
-								$(error).closest('.i-ch-wrapper').addClass(validator.settings.errorClass);
+								$(error).closest('.sf-ch-wrapper').addClass(validator.settings.errorClass);
 						}
 						else
 						{
 							if($(error).is('select'))
-								$(error).closest('.i-s-wrapper').removeClass(validator.settings.errorClass);
+								$(error).closest('.sf-s-wrapper').removeClass(validator.settings.errorClass);
 							else if($(error).is(':radio'))
-								$(error).closest('.i-r-wrapper').removeClass(validator.settings.errorClass);
+								$(error).closest('.sf-r-wrapper').removeClass(validator.settings.errorClass);
 							else if($(error).is(':checkbox'))
-								$(error).closest('.i-ch-wrapper').removeClass(validator.settings.errorClass);
+								$(error).closest('.sf-ch-wrapper').removeClass(validator.settings.errorClass);
 						}
 					});
 				}
@@ -193,7 +192,7 @@ $.widget( "Imperial.styleForm", {
 });
 
 var interval = null;
-$.widget("Imperial.selectStyle", {
+$.widget("SuperForm.selectStyle", {
 	options: {
 		hover:false,
 		search: false,
@@ -227,11 +226,11 @@ $.widget("Imperial.selectStyle", {
     _create: function() {
 		var $this = this;
 		$this.element.old = $this.element.clone();
-		$this.element.addClass('i-s-initialized');
+		$this.element.addClass('sf-s-initialized');
 		
 		var $select = $this.element;
 		
-		if($select.hasClass('i-s-styled'))
+		if($select.hasClass('sf-s-styled'))
 		{
 			if($this.element.find('option').length !== $this.element.old.find('option').length && $this.element.old)
 			{
@@ -239,7 +238,7 @@ $.widget("Imperial.selectStyle", {
 			}
 		}
 
-		if(!$select.is('select') || $select.hasClass($this.options.ignoredClass) || $select.hasClass('i-s-styled'))
+		if(!$select.is('select') || $select.hasClass($this.options.ignoredClass) || $select.hasClass('sf-s-styled'))
 		{
 			$this.destroy();
 			return false;
@@ -257,28 +256,28 @@ $.widget("Imperial.selectStyle", {
 			}
 		}
 			
-		if(!$select.hasClass('i-s-styled'))
+		if(!$select.hasClass('sf-s-styled'))
 		{
 			this._renderMenu();
 			this._renderItem();
 			
-			$select.addClass('i-s-styled i-hide');
+			$select.addClass('sf-s-styled sf-hide');
 		}
 		
 		$this._trigger( "onCreate", null, $select);
 		$this._setUpList();
 		if($select.is(':disabled'))
 		{
-			$select.closest('.i-s-wrapper').addClass('i-s-disabled');
+			$select.closest('.sf-s-wrapper').addClass('sf-s-disabled');
 		}
 		else	
 		{
 			if($this.options.isClickable)
 			{
-				$select.closest('.i-s-wrapper').find('p.i-s-holder').addClass('i-s-click-able');
-				$select.closest('.i-s-wrapper').find('p.i-s-holder').off('click.i_select').on('click.i_select',function(event)
+				$select.closest('.sf-s-wrapper').find('p.sf-s-holder').addClass('sf-s-click-able');
+				$select.closest('.sf-s-wrapper').find('p.sf-s-holder').off('click.i_select').on('click.i_select',function(event)
 				{
-					if($select.hasClass('i-s-list-is-open'))
+					if($select.hasClass('sf-s-list-is-open'))
 						$this._close();
 					else
 						$this._open();
@@ -287,18 +286,18 @@ $.widget("Imperial.selectStyle", {
 					return false;
 				});
 				
-				$select.closest('.i-s-wrapper').find('p.i-s-holder .i-s-button').off('click.i_select').on('click.i_select',function(event)
+				$select.closest('.sf-s-wrapper').find('p.sf-s-holder .sf-s-button').off('click.i_select').on('click.i_select',function(event)
 				{
-					$(this).parent('p.i-s-holder').click();
+					$(this).parent('p.sf-s-holder').click();
 					event.stopPropagation();
 					return false;
 				});
 			}
 			else
 			{
-				$select.closest('.i-s-wrapper').find('p.i-s-holder .i-s-button').off('click.i_select').on('click.i_select',function(event)
+				$select.closest('.sf-s-wrapper').find('p.sf-s-holder .sf-s-button').off('click.i_select').on('click.i_select',function(event)
 				{	
-					if($select.hasClass('i-s-list-is-open'))
+					if($select.hasClass('sf-s-list-is-open'))
 						$this._close();
 					else
 						$this._open();
@@ -312,59 +311,59 @@ $.widget("Imperial.selectStyle", {
 			{
 				if($this.options.isClickable === true)
 				{
-					$select.closest('.i-s-wrapper').find('p.i-s-holder').off('mouseenter.i_select').on('mouseenter.i_select', function(event)
+					$select.closest('.sf-s-wrapper').find('p.sf-s-holder').off('mouseenter.i_select').on('mouseenter.i_select', function(event)
 					{
-						$(this).addClass('i-s-hover');
+						$(this).addClass('sf-s-hover');
 						$this._trigger( "onEnter", event, $select);
 					});
 
-					$select.closest('.i-s-wrapper').find('p.i-s-holder').off('mouseleave.i_select').on('mouseleave.i_select', function(event)
+					$select.closest('.sf-s-wrapper').find('p.sf-s-holder').off('mouseleave.i_select').on('mouseleave.i_select', function(event)
 					{
-						$(this).removeClass('i-s-hover');
+						$(this).removeClass('sf-s-hover');
 						$this._trigger( "onLeave", event, $select);
 					});
 				}
 				else
 				{
-					$select.closest('.i-s-wrapper').find('p.i-s-holder .i-s-button').off('mouseenter.i_select').on('mouseenter.i_select', function(event)
+					$select.closest('.sf-s-wrapper').find('p.sf-s-holder .sf-s-button').off('mouseenter.i_select').on('mouseenter.i_select', function(event)
 					{
-						$(this).addClass('i-s-hover');
+						$(this).addClass('sf-s-hover');
 						$this._trigger( "onEnter", event, $select);
 					});
 
-					$select.closest('.i-s-wrapper').find('p.i-s-holder .i-s-button').off('mouseleave.i_select').on('mouseleave.i_select', function(event)
+					$select.closest('.sf-s-wrapper').find('p.sf-s-holder .sf-s-button').off('mouseleave.i_select').on('mouseleave.i_select', function(event)
 					{
-						$(this).removeClass('i-s-hover');
+						$(this).removeClass('sf-s-hover');
 						$this._trigger( "onLeave", event, $select);
 					});
 				}
 			}
 			
 			if($this.options.absolute)
-				var $listWraper = $('#i-s-list-'+$this.uuid);
+				var $listWraper = $('#sf-s-list-'+$this.uuid);
 			else
-				$listWraper = $select.closest('.i-s-wrapper');
+				$listWraper = $select.closest('.sf-s-wrapper');
 			
-			$listWraper.find('ul.i-s-list-inner li.i-s-default').each(function()
+			$listWraper.find('ul.sf-s-list-inner li.sf-s-default').each(function()
 			{
-				$(this).not('.i-s-option-disabled').off('mouseenter.i_select').on('mouseenter.i_select', function()
+				$(this).not('.sf-s-option-disabled').off('mouseenter.i_select').on('mouseenter.i_select', function()
 				{
-					$listWraper.find('ul.i-s-list-inner li.i-s-default').removeClass('i-s-hover');
-					$(this).addClass('i-s-hover');
+					$listWraper.find('ul.sf-s-list-inner li.sf-s-default').removeClass('sf-s-hover');
+					$(this).addClass('sf-s-hover');
 				});
 
-//				$(this).not('.i-s-option-disabled').off('mouseleave.i_select').on('mouseleave.i_select', function()
+//				$(this).not('.sf-s-option-disabled').off('mouseleave.i_select').on('mouseleave.i_select', function()
 //				{
-//					$(this).removeClass('i-s-hover');
+//					$(this).removeClass('sf-s-hover');
 //				});
 
 				$(this).off('click.i_select').on('click.i_select', function(event)
 				{
-					if($(this).hasClass('i-s-active'))
+					if($(this).hasClass('sf-s-active'))
 					{
 						$this._close();
 					}
-					else if($(this).hasClass('i-s-option-disabled'))
+					else if($(this).hasClass('sf-s-option-disabled'))
 					{
 						event.preventDefault();
 						event.stopPropagation();
@@ -374,9 +373,9 @@ $.widget("Imperial.selectStyle", {
 						var clone = $(this).clone();
 						clone.find('input[disabled]').remove();
 						$this._close();
-						$listWraper.find('ul.i-s-list-inner li.i-s-active').removeClass('i-s-active');
-						$select.closest('.i-s-wrapper').find('p.i-s-holder a').html($.trim(clone.html().replace(/&nbsp;/g,'')));
-						$(this).addClass('i-s-active');
+						$listWraper.find('ul.sf-s-list-inner li.sf-s-active').removeClass('sf-s-active');
+						$select.closest('.sf-s-wrapper').find('p.sf-s-holder a').html($.trim(clone.html().replace(/&nbsp;/g,'')));
+						$(this).addClass('sf-s-active');
 						$select.val($(this).find('input').val()).change();
 						if(typeof($select.closest('form')) != 'undefined' && $.isFunction($select.valid))
 						{
@@ -385,9 +384,9 @@ $.widget("Imperial.selectStyle", {
 							{
 								$select.valid();
 								if($select.hasClass(validator.settings.errorClass))
-									$select.closest('.i-s-wrapper').addClass(validator.settings.errorClass);
+									$select.closest('.sf-s-wrapper').addClass(validator.settings.errorClass);
 								else
-									$select.closest('.i-s-wrapper').removeClass(validator.settings.errorClass);
+									$select.closest('.sf-s-wrapper').removeClass(validator.settings.errorClass);
 							}
 						}
 						$this._trigger( "onChange", null, $select);
@@ -407,16 +406,16 @@ $.widget("Imperial.selectStyle", {
 				$(window).on('load', function()
 				{
 					$this._setMinWidth();
-					$select.closest('.i-s-wrapper').find('.i-s-list').addClass('i-hide');
+					$select.closest('.sf-s-wrapper').find('.sf-s-list').addClass('sf-hide');
 				});
 			}
 			
-			$listWraper.find('.i-s-list, .scroll-element').off('click.stopProp').on('click.stopProp', function(e)
+			$listWraper.find('.sf-s-list, .scroll-element').off('click.stopProp').on('click.stopProp', function(e)
 			{
 				e.stopPropagation();
 			});
 			
-			$listWraper.find('.i-s-list').addClass('i-s-list-formated');
+			$listWraper.find('.sf-s-list').addClass('sf-s-list-formated');
 		}
     },
 	create:function(){this._create();},
@@ -424,8 +423,8 @@ $.widget("Imperial.selectStyle", {
 	_destroy:function()
 	{
 		this.element.removeData();
-		this.element.removeClass('i-s-styled');
-		this.element.closest('.i-s-wrapper').replaceWith(this.element.old);
+		this.element.removeClass('sf-s-styled');
+		this.element.closest('.sf-s-wrapper').replaceWith(this.element.old);
 	},
 	destroy:function(){this._destroy();this._super();},
 	
@@ -457,30 +456,30 @@ $.widget("Imperial.selectStyle", {
 		var paddingListElement = 0;
 		
 		var list;
-		var clone = $select.closest('.i-s-wrapper').clone().css('width', 'auto').appendTo('body');
+		var clone = $select.closest('.sf-s-wrapper').clone().css('width', 'auto').appendTo('body');
 		if(this.options.absolute)
 		{
-			list = $("#i-s-list-"+$this.uuid);
+			list = $("#sf-s-list-"+$this.uuid);
 			var cloneList = list.clone().appendTo('body');
 		}
 		else
 		{
-			list = $select.closest('.i-s-wrapper');
+			list = $select.closest('.sf-s-wrapper');
 		}
 		
-		var holder = clone.find('p.i-s-holder');
+		var holder = clone.find('p.sf-s-holder');
 		
 		var listElements;
 		if($this.options.absolute)
 		{
-			listElements = cloneList.find('ul.i-s-list-inner .i-s-default, ul.i-s-list-inner .i-s-optgroup-label');
+			listElements = cloneList.find('ul.sf-s-list-inner .sf-s-default, ul.sf-s-list-inner .sf-s-optgroup-label');
 		}
 		else
 		{
-			listElements = clone.find('ul.i-s-list-inner .i-s-default, ul.i-s-list-inner .i-s-optgroup-label');
+			listElements = clone.find('ul.sf-s-list-inner .sf-s-default, ul.sf-s-list-inner .sf-s-optgroup-label');
 		}
 		
-		clone.find('ul.i-s-list').css({width: 'auto'});
+		clone.find('ul.sf-s-list').css({width: 'auto'});
 		listElements.css({position: 'absolute',width: 'auto', overflow: 'visible', fontSize: holder.find('a').css('font-size'), fontWeight: holder.find('a').css('font-weight')});
 		
 		if(listElements.length > 0)
@@ -491,7 +490,7 @@ $.widget("Imperial.selectStyle", {
 					minWidth = element.scrollWidth+3;
 			});
 			
-			if(listElements.closest('.i-s-list').hasClass('i-s-overflow'))
+			if(listElements.closest('.sf-s-list').hasClass('sf-s-overflow'))
 					minWidth = parseInt(minWidth)+20;
 		}
 		paddingListElement = listElements.innerWidth()-listElements.width();
@@ -505,26 +504,26 @@ $.widget("Imperial.selectStyle", {
 			else
 				var selectWidth = window.getComputedStyle($select[0]).width;
 			
-			$select.closest('.i-s-wrapper').css('width', selectWidth);
-			selectWidth = $select.closest('.i-s-wrapper').outerWidth();
+			$select.closest('.sf-s-wrapper').css('width', selectWidth);
+			selectWidth = $select.closest('.sf-s-wrapper').outerWidth();
 			if(minWidth > selectWidth)
-				list.find('.i-s-list').css('width', minWidth);
+				list.find('.sf-s-list').css('width', minWidth);
 		}
 		else
 		{
 			var width = Math.ceil(holder.outerWidth(false))-Math.ceil(holder.width())+minWidth-paddingListElement;
-			$select.closest('.i-s-wrapper').width(width);
+			$select.closest('.sf-s-wrapper').width(width);
 		}
 		
-		if($select.closest('.i-s-wrapper').offset().left+minWidth > $('body').offset().left+$('body').width())
-			list.find('.i-s-list').addClass('i-s-list-to-right');
+		if($select.closest('.sf-s-wrapper').offset().left+minWidth > $('body').offset().left+$('body').width())
+			list.find('.sf-s-list').addClass('sf-s-list-to-right');
 		else
-			list.find('.i-s-list').removeClass('i-s-list-to-right');
+			list.find('.sf-s-list').removeClass('sf-s-list-to-right');
 		
 		if($this.options.absolute)
 		{
-			list.find('.i-s-list').css({width: minWidth+"px"});
-//			list.find('.i-s-list').css({width: $select.closest('.i-s-wrapper').width()+"px"});
+			list.find('.sf-s-list').css({width: minWidth+"px"});
+//			list.find('.sf-s-list').css({width: $select.closest('.sf-s-wrapper').width()+"px"});
 			cloneList.remove();
 		}
 		
@@ -536,13 +535,13 @@ $.widget("Imperial.selectStyle", {
 		var $this = this;
 		if($this.options.absolute)
 		{
-			var $list = $("#i-s-list-"+this.uuid);
+			var $list = $("#sf-s-list-"+this.uuid);
 			
 			$(document).off('selectHide').on('selectHide', function()
 			{
-				$('.i-s-list-wrap-absolute').each(function()
+				$('.sf-s-list-wrap-absolute').each(function()
 				{
-					var $select2 = $("#i-s-select-"+$(this).attr('id').replace('i-s-list-',''));
+					var $select2 = $("#sf-s-select-"+$(this).attr('id').replace('sf-s-list-',''));
 					if(typeof($select2.offset()) != 'undefined')
 					{
 						$(this).css({
@@ -562,45 +561,45 @@ $.widget("Imperial.selectStyle", {
 		}
 		else
 		{
-			var $list = this.element.closest('.i-s-wrapper');
+			var $list = this.element.closest('.sf-s-wrapper');
 		}
 		
-		$list.find('.i-s-list').removeClass('i-hide').removeClass('i-s-overflow').css({height: 'auto', top: 'auto'});
+		$list.find('.sf-s-list').removeClass('sf-hide').removeClass('sf-s-overflow').css({height: 'auto', top: 'auto'});
 		
-		if($list.find('.i-s-list ul.scrollbar-formated-default'))
-			$list.find('.i-s-list ul.scrollbar-formated-default').css('max-height', 'none');
+		if($list.find('.sf-s-list ul.scrollbar-formated-default'))
+			$list.find('.sf-s-list ul.scrollbar-formated-default').css('max-height', 'none');
 		
 		if(Math.ceil(this.options.maxListElement) > 0)
 		{
-			var $lengthVisible = Math.ceil($list.find('.i-s-list .i-s-default:visible').length)+Math.ceil($list.find('.i-s-list .i-s-optgroup:visible').length);
+			var $lengthVisible = Math.ceil($list.find('.sf-s-list .sf-s-default:visible').length)+Math.ceil($list.find('.sf-s-list .sf-s-optgroup:visible').length);
 			if($lengthVisible > Math.ceil(this.options.maxListElement))
 			{
-				$list.find('.i-s-list').addClass('i-s-overflow');
-				$list.find('.i-s-list').height(Math.ceil(this.options.maxListElement)*$list.find('ul.i-s-list-inner li.i-s-default').outerHeight());
+				$list.find('.sf-s-list').addClass('sf-s-overflow');
+				$list.find('.sf-s-list').height(Math.ceil(this.options.maxListElement)*$list.find('ul.sf-s-list-inner li.sf-s-default').outerHeight());
 			}
 		}
 		
 		if(Math.ceil(this.element.data().maxlistelement) > 0)
 		{
-			var $lengthVisible = Math.ceil($list.find('.i-s-list .i-s-default:visible').length)+Math.ceil($list.find('.i-s-list .i-s-optgroup:visible').length);
+			var $lengthVisible = Math.ceil($list.find('.sf-s-list .sf-s-default:visible').length)+Math.ceil($list.find('.sf-s-list .sf-s-optgroup:visible').length);
 			if($lengthVisible > Math.ceil(this.element.data().maxlistelement))
 			{
-				$list.find('.i-s-list').addClass('i-s-overflow');
-				$list.find('.i-s-list').height(Math.ceil(this.element.data().maxlistelement)*$list.find('ul.i-s-list-inner li.i-s-default').outerHeight());
+				$list.find('.sf-s-list').addClass('sf-s-overflow');
+				$list.find('.sf-s-list').height(Math.ceil(this.element.data().maxlistelement)*$list.find('ul.sf-s-list-inner li.sf-s-default').outerHeight());
 			}
 		}
 
-		var listHeight = Math.ceil($list.find('.i-s-list').outerHeight());
+		var listHeight = Math.ceil($list.find('.sf-s-list').outerHeight());
 		
 		if(this.options.window)
 		{
-			var upHeight = Math.ceil(this.element.closest('.i-s-wrapper').offset().top-$(window).scrollTop());
-			var downHeight = Math.ceil($(window).height()-(this.element.closest('.i-s-wrapper').offset().top+this.element.closest('.i-s-wrapper').outerHeight()-$(window).scrollTop()));
+			var upHeight = Math.ceil(this.element.closest('.sf-s-wrapper').offset().top-$(window).scrollTop());
+			var downHeight = Math.ceil($(window).height()-(this.element.closest('.sf-s-wrapper').offset().top+this.element.closest('.sf-s-wrapper').outerHeight()-$(window).scrollTop()));
 		}
 		else
 		{
 			var upHeight = Math.ceil($list.offset().top);
-			var downHeight = Math.ceil(this.element.closest('body').height()-$list.find('.i-s-list').offset().top);
+			var downHeight = Math.ceil(this.element.closest('body').height()-$list.find('.sf-s-list').offset().top);
 		}
 
 		if(downHeight < listHeight)
@@ -609,42 +608,42 @@ $.widget("Imperial.selectStyle", {
             {
                 if(upHeight > downHeight)
                 {
-                    var maxelement = Math.ceil(upHeight/$list.find('ul.i-s-list-inner li.i-s-default').outerHeight())-1;
+                    var maxelement = Math.ceil(upHeight/$list.find('ul.sf-s-list-inner li.sf-s-default').outerHeight())-1;
 					
 					if(maxelement === 0)
                        maxelement = 1;
                    
-				    maxelement = Math.ceil(maxelement*$list.find('ul.i-s-list-inner li.i-s-default').outerHeight());
+				    maxelement = Math.ceil(maxelement*$list.find('ul.sf-s-list-inner li.sf-s-default').outerHeight());
 					
-                    $list.find('.i-s-list').addClass('i-s-overflow');
-                    listHeight = Math.ceil($list.find('.i-s-list').css('height', maxelement).outerHeight());
+                    $list.find('.sf-s-list').addClass('sf-s-overflow');
+                    listHeight = Math.ceil($list.find('.sf-s-list').css('height', maxelement).outerHeight());
 					
 					if($this.options.absolute)
 					{
 						$(document).off('selectHide').on('selectHide', function()
 						{
 							$list.css({
-								left: $this.element.closest('.i-s-wrapper').offset().left+"px",
-								top: $this.element.closest('.i-s-wrapper').offset().top+"px"
+								left: $this.element.closest('.sf-s-wrapper').offset().left+"px",
+								top: $this.element.closest('.sf-s-wrapper').offset().top+"px"
 							});
 						});
 					}
 					
-					$list.addClass('i-s-to-top');
-                    $list.find('.i-s-list').css('top', '-'+listHeight+'px');
+					$list.addClass('sf-s-to-top');
+                    $list.find('.sf-s-list').css('top', '-'+listHeight+'px');
                 }
                 else
                 {
-                    var maxelement = Math.ceil(downHeight/$list.find('ul.i-s-list-inner li.i-s-default').outerHeight())-1;
+                    var maxelement = Math.ceil(downHeight/$list.find('ul.sf-s-list-inner li.sf-s-default').outerHeight())-1;
                     
                     if(maxelement === 0)
                        maxelement = 1;
                    
-					maxelement = Math.ceil(maxelement*$list.find('ul.i-s-list-inner li.i-s-default').outerHeight());
-                    $list.find('.i-s-list').addClass('i-s-overflow');
+					maxelement = Math.ceil(maxelement*$list.find('ul.sf-s-list-inner li.sf-s-default').outerHeight());
+                    $list.find('.sf-s-list').addClass('sf-s-overflow');
 					
-					$list.removeClass('i-s-to-top');
-                    $list.find('.i-s-list').css('height', maxelement);
+					$list.removeClass('sf-s-to-top');
+                    $list.find('.sf-s-list').css('height', maxelement);
                 }
             }
             else
@@ -654,20 +653,20 @@ $.widget("Imperial.selectStyle", {
 					$(document).off('selectHide').on('selectHide', function()
 					{
 						$list.css({
-							left: $this.element.closest('.i-s-wrapper').offset().left+"px",
-							top: $this.element.closest('.i-s-wrapper').offset().top+"px"
+							left: $this.element.closest('.sf-s-wrapper').offset().left+"px",
+							top: $this.element.closest('.sf-s-wrapper').offset().top+"px"
 						});
 					});
 				}
 				
-                $list.addClass('i-s-to-top');
-                $list.find('.i-s-list').css('top', '-'+listHeight+'px');
+                $list.addClass('sf-s-to-top');
+                $list.find('.sf-s-list').css('top', '-'+listHeight+'px');
             }
 		}
 		else
 		{	
-			$list.removeClass('i-s-to-top');
-			$list.find('.i-s-list');
+			$list.removeClass('sf-s-to-top');
+			$list.find('.sf-s-list');
 		}
 	},
 	
@@ -676,54 +675,54 @@ $.widget("Imperial.selectStyle", {
 	{
 		var $this = this;
 		var $select = $this.element;
-		$select.closest('.i-s-wrapper').find('.i-s-list').prepend('<div class="i-s-search-input"><input type="text" placeholder="'+$this.options.lang.placeholders.search+'"></div>');
+		$select.closest('.sf-s-wrapper').find('.sf-s-list').prepend('<div class="sf-s-search-input"><input type="text" placeholder="'+$this.options.lang.placeholders.search+'"></div>');
 		
-		$select.closest('.i-s-wrapper').find('p.i-s-holder').off('click.search').on('click.search', function(){
-			$select.closest('.i-s-wrapper').find('.i-s-search-input input').focus();
+		$select.closest('.sf-s-wrapper').find('p.sf-s-holder').off('click.search').on('click.search', function(){
+			$select.closest('.sf-s-wrapper').find('.sf-s-search-input input').focus();
 		});
 		
-		$select.closest('.i-s-wrapper').find('.i-s-search-input input').off('keyup.search').on('keyup.search', function()
+		$select.closest('.sf-s-wrapper').find('.sf-s-search-input input').off('keyup.search').on('keyup.search', function()
 		{
 			var reg = new RegExp($(this).val(), 'i');
 			
 			if($(this).val().length)
 			{
-				$select.closest('.i-s-wrapper').find('.i-s-list .i-s-default').each(function(iterator, element)
+				$select.closest('.sf-s-wrapper').find('.sf-s-list .sf-s-default').each(function(iterator, element)
 				{
 					if(reg.test($(element).text().trim()))
 					{
-						$(element).removeClass('i-s-element-hide');
+						$(element).removeClass('sf-s-element-hide');
 					}
 					else
 					{
-						$(element).addClass('i-s-element-hide');
+						$(element).addClass('sf-s-element-hide');
 					}
 					
-					if($(element).closest('.i-s-optgroup').length)
+					if($(element).closest('.sf-s-optgroup').length)
 					{
-						if($(element).closest('.i-s-optgroup').find('.i-s-default:not(.i-s-element-hide)').length)
+						if($(element).closest('.sf-s-optgroup').find('.sf-s-default:not(.sf-s-element-hide)').length)
 						{
-							$(element).closest('.i-s-optgroup').show();
+							$(element).closest('.sf-s-optgroup').show();
 						}
 						else
 						{
-							$(element).closest('.i-s-optgroup').hide();
+							$(element).closest('.sf-s-optgroup').hide();
 						}
 					}
 				});
 				
-				if($select.closest('.i-s-wrapper').find('.i-s-list .i-s-default:visible').length == 0)
+				if($select.closest('.sf-s-wrapper').find('.sf-s-list .sf-s-default:visible').length == 0)
 				{
-					if($select.closest('.i-s-wrapper').find('.i-s-list .i-s-no-results').length == 0)
-						$select.closest('.i-s-wrapper').find('.i-s-list').append('<li class="i-s-no-results" style=""><input disabled="" value="" type="hidden">'+$this.options.lang.no_results+'</li>');
+					if($select.closest('.sf-s-wrapper').find('.sf-s-list .sf-s-no-results').length == 0)
+						$select.closest('.sf-s-wrapper').find('.sf-s-list').append('<li class="sf-s-no-results" style=""><input disabled="" value="" type="hidden">'+$this.options.lang.no_results+'</li>');
 				}
 				else {
-					$select.closest('.i-s-wrapper').find('.i-s-list .i-s-no-results').remove();
+					$select.closest('.sf-s-wrapper').find('.sf-s-list .sf-s-no-results').remove();
 				}
 
 			}
 			else {
-				$select.closest('.i-s-wrapper').find('.i-s-list .i-s-default').removeClass('i-s-element-hide');
+				$select.closest('.sf-s-wrapper').find('.sf-s-list .sf-s-default').removeClass('sf-s-element-hide');
 			}
 			
 			$this._setUpList();
@@ -735,28 +734,28 @@ $.widget("Imperial.selectStyle", {
 	{
 		var $select = this.element;
 		
-		$select.closest('.i-s-wrapper').find('.i-s-holder a').off('focusin.keyboard').on('focusin.keyboard', function()
+		$select.closest('.sf-s-wrapper').find('.sf-s-holder a').off('focusin.keyboard').on('focusin.keyboard', function()
 		{
-			$select.closest('.i-s-wrapper').addClass('i-s-focus');
+			$select.closest('.sf-s-wrapper').addClass('sf-s-focus');
 		}).off('focusout.keyboard').on('focusout.keyboard',function()
 		{
-			$select.closest('.i-s-wrapper').removeClass('i-s-focus');
+			$select.closest('.sf-s-wrapper').removeClass('sf-s-focus');
 		});
 		
 		var ar=new Array(33,34,35,36,37,38,39,40);
-		$select.closest('.i-s-wrapper').find('.i-s-holder a').off('keyup.keyboard').on('keyup.keyboard', function(e)
+		$select.closest('.sf-s-wrapper').find('.sf-s-holder a').off('keyup.keyboard').on('keyup.keyboard', function(e)
 		{
 			var code = e.keyCode || e.which;
 			if(code == '38' || code == '37')
 			{
-				var $elements = $select.closest('.i-s-wrapper').find('.i-s-list .i-s-default:not(.i-s-option-disabled)');
+				var $elements = $select.closest('.sf-s-wrapper').find('.sf-s-list .sf-s-default:not(.sf-s-option-disabled)');
 				$elements.each(function(i, elem)
 				{
-					if($(elem).hasClass('i-s-active'))
+					if($(elem).hasClass('sf-s-active'))
 					{
-						if(i-1 >= 0)
+						if(sf-1 >= 0)
 						{
-							$elements[i-1].click();
+							$elements[sf-1].click();
 							return false;
 						}
 					}
@@ -764,10 +763,10 @@ $.widget("Imperial.selectStyle", {
 			}
 			else if(code == '40' || code == '39')
 			{
-				var $elements = $select.closest('.i-s-wrapper').find('.i-s-list .i-s-default:not(.i-s-option-disabled)');
+				var $elements = $select.closest('.sf-s-wrapper').find('.sf-s-list .sf-s-default:not(.sf-s-option-disabled)');
 				$elements.each(function(i, elem)
 				{
-					if($(elem).hasClass('i-s-active'))
+					if($(elem).hasClass('sf-s-active'))
 					{
 						if(i+1 <= $elements.length)
 						{
@@ -791,24 +790,24 @@ $.widget("Imperial.selectStyle", {
 		var searchWord = '';
 		var timeType = null;
 		
-		$select.closest('.i-s-wrapper').find('.i-s-list').off('keyup.keyboard').on('keyup.keyboard', function(e)
+		$select.closest('.sf-s-wrapper').find('.sf-s-list').off('keyup.keyboard').on('keyup.keyboard', function(e)
 		{
 			var code = e.keyCode || e.which;
 			if(code == '38' || code == '37')
 			{
-				var $elements = $select.closest('.i-s-wrapper').find('.i-s-list .i-s-default:not(.i-s-option-disabled)');
+				var $elements = $select.closest('.sf-s-wrapper').find('.sf-s-list .sf-s-default:not(.sf-s-option-disabled)');
 				$elements.each(function(i, elem)
 				{
-					if($(elem).hasClass('i-s-hover'))
+					if($(elem).hasClass('sf-s-hover'))
 					{
-						$elements.removeClass('i-s-hover');
-						if(i-1 >= 0)
+						$elements.removeClass('sf-s-hover');
+						if(sf-1 >= 0)
 						{
-							$($elements[i-1]).addClass('i-s-hover');
+							$($elements[sf-1]).addClass('sf-s-hover');
 						}
 						else
 						{
-							$($elements[$elements.length-1]).addClass('i-s-hover');
+							$($elements[$elements.length-1]).addClass('sf-s-hover');
 						}
 						return false;
 					}
@@ -817,19 +816,19 @@ $.widget("Imperial.selectStyle", {
 			}
 			else if(code == '40' || code == '39')
 			{
-				var $elements = $select.closest('.i-s-wrapper').find('.i-s-list .i-s-default:not(.i-s-option-disabled)');
+				var $elements = $select.closest('.sf-s-wrapper').find('.sf-s-list .sf-s-default:not(.sf-s-option-disabled)');
 				$elements.each(function(i, elem)
 				{
-					if($(elem).hasClass('i-s-hover'))
+					if($(elem).hasClass('sf-s-hover'))
 					{
-						$elements.removeClass('i-s-hover');
+						$elements.removeClass('sf-s-hover');
 						if(i+1 < $elements.length)
 						{
-							$($elements[i+1]).addClass('i-s-hover');
+							$($elements[i+1]).addClass('sf-s-hover');
 						}
 						else
 						{
-							$($elements[0]).addClass('i-s-hover');
+							$($elements[0]).addClass('sf-s-hover');
 						}
 						return false;
 					}
@@ -837,7 +836,7 @@ $.widget("Imperial.selectStyle", {
 			}
 			else if(code == '13')
 			{
-				$select.closest('.i-s-wrapper').find('.i-s-default.i-s-hover').click();
+				$select.closest('.sf-s-wrapper').find('.sf-s-default.sf-s-hover').click();
 			}
 			else
 			{
@@ -851,7 +850,7 @@ $.widget("Imperial.selectStyle", {
 				
 				timeType = setTimeout(function()
 				{
-					var $elements = $select.closest('.i-s-wrapper').find('.i-s-list .i-s-default:not(.i-s-option-disabled)').filter(function()
+					var $elements = $select.closest('.sf-s-wrapper').find('.sf-s-list .sf-s-default:not(.sf-s-option-disabled)').filter(function()
 					{
 						return ($(this).text().toLowerCase().match('^'+searchWord.toLowerCase()));
 					});
@@ -861,19 +860,19 @@ $.widget("Imperial.selectStyle", {
 						var not_select = true;
 						$elements.each(function(index, elem)
 						{
-							if($(elem).hasClass('i-s-hover'))
+							if($(elem).hasClass('sf-s-hover'))
 							{
-								$select.closest('.i-s-wrapper').find('.i-s-list .i-s-hover').removeClass('i-s-hover');
+								$select.closest('.sf-s-wrapper').find('.sf-s-list .sf-s-hover').removeClass('sf-s-hover');
 								if(index == $elements.length-1)
 								{
-									$elements.first().addClass('i-s-hover');
+									$elements.first().addClass('sf-s-hover');
 									not_select = false;
 									return false;
 									
 								}
 								else
 								{
-									$($elements[index+1]).addClass('i-s-hover');
+									$($elements[index+1]).addClass('sf-s-hover');
 									not_select = false;
 									return false;
 								}
@@ -882,14 +881,14 @@ $.widget("Imperial.selectStyle", {
 						
 						if(not_select)
 						{
-							$select.closest('.i-s-wrapper').find('.i-s-list .i-s-hover').removeClass('i-s-hover');
-							$elements.first().addClass('i-s-hover');
+							$select.closest('.sf-s-wrapper').find('.sf-s-list .sf-s-hover').removeClass('sf-s-hover');
+							$elements.first().addClass('sf-s-hover');
 						}
 						
-						var $selected = $select.closest('.i-s-wrapper').find('.i-s-list .i-s-hover')
+						var $selected = $select.closest('.sf-s-wrapper').find('.sf-s-list .sf-s-hover')
 						
 						var list;
-						if(list = $select.closest('.i-s-wrapper').find('.i-s-list.i-s-overflow'))
+						if(list = $select.closest('.sf-s-wrapper').find('.sf-s-list.sf-s-overflow'))
 						{
 							list.scrollTop(0);
 							list.scrollTop($selected.position().top-list.height()+$selected.outerHeight(true));
@@ -915,10 +914,10 @@ $.widget("Imperial.selectStyle", {
 		var $this = this;
 		var $select = this.element;
 		
-		if($select.hasClass('i-s-list-is-open'))
+		if($select.hasClass('sf-s-list-is-open'))
 			return false;
 		
-		$('select.i-s-styled').selectStyle('close');
+		$('select.sf-s-styled').selectStyle('close');
 		
 		$('html body').on('click.i_select', function()
 		{
@@ -927,18 +926,18 @@ $.widget("Imperial.selectStyle", {
 		
 		this._setUpList();
 		
-		$select.addClass('i-s-list-is-open');
-		$select.closest('.i-s-wrapper').find('p.i-s-holder').addClass('i-s-list-open');
+		$select.addClass('sf-s-list-is-open');
+		$select.closest('.sf-s-wrapper').find('p.sf-s-holder').addClass('sf-s-list-open');
 		
 		var $selected;
 		
 		if($this.options.absolute)
 		{
-			$selected = $("#i-s-list-"+$this.uuid).find('.i-s-default.i-s-active');
+			$selected = $("#sf-s-list-"+$this.uuid).find('.sf-s-default.sf-s-active');
 		}
 		else
 		{
-			$selected = $select.closest('.i-s-wrapper').find('.i-s-default.i-s-active');
+			$selected = $select.closest('.sf-s-wrapper').find('.sf-s-default.sf-s-active');
 		}
 		
 		if($selected)
@@ -947,11 +946,11 @@ $.widget("Imperial.selectStyle", {
 			
 			if($this.options.absolute)
 			{
-				list = $("#i-s-list-"+$this.uuid).find('.i-s-list.i-s-overflow');
+				list = $("#sf-s-list-"+$this.uuid).find('.sf-s-list.sf-s-overflow');
 			}
 			else
 			{
-				list = $select.closest('.i-s-wrapper').find('.i-s-list.i-s-overflow');
+				list = $select.closest('.sf-s-wrapper').find('.sf-s-list.sf-s-overflow');
 			}
 
 			if(list && $selected.length)
@@ -974,40 +973,40 @@ $.widget("Imperial.selectStyle", {
 			});
 			
 			var zIndex = Math.max.apply(Math,zIndexs);;
-			$("#i-s-list-"+$this.uuid).find('.i-s-list').removeClass('i-hide-opacity').attr('tabindex', '1');
+			$("#sf-s-list-"+$this.uuid).find('.sf-s-list').removeClass('sf-hide-opacity').attr('tabindex', '1');
 			
 			if(!isNaN(zIndex))
 			{
-				$("#i-s-list-"+$this.uuid).css({'zIndex': zIndex});
+				$("#sf-s-list-"+$this.uuid).css({'zIndex': zIndex});
 			}
 		}
 		else 
 		{
-			$select.closest('.i-s-wrapper').find('.i-s-list').removeClass('i-hide-opacity').attr('tabindex', '1').focus();
+			$select.closest('.sf-s-wrapper').find('.sf-s-list').removeClass('sf-hide-opacity').attr('tabindex', '1').focus();
 		}
 	},
 	
 	_close:function()
 	{
 		var $this = this;
-		if(!this.element.hasClass('i-s-list-is-open'))
+		if(!this.element.hasClass('sf-s-list-is-open'))
 			return false;
 		
-		this.element.removeClass('i-s-list-is-open');
-		this.element.closest('.i-s-wrapper').find('p.i-s-holder').removeClass('i-s-list-open');
-		this.element.closest('.i-s-wrapper').find('p.i-s-holder .i-s-button').removeClass('i-s-list-open');
+		this.element.removeClass('sf-s-list-is-open');
+		this.element.closest('.sf-s-wrapper').find('p.sf-s-holder').removeClass('sf-s-list-open');
+		this.element.closest('.sf-s-wrapper').find('p.sf-s-holder .sf-s-button').removeClass('sf-s-list-open');
 		
 		var list;
 		if($this.options.absolute)
 		{
-			list = $("#i-s-list-"+this.uuid);
+			list = $("#sf-s-list-"+this.uuid);
 		}
 		else
 		{
-			list = this.element.closest('.i-s-wrapper');
+			list = this.element.closest('.sf-s-wrapper');
 		}
 		
-		list.find('.i-s-list').addClass('i-hide-opacity').attr('tabindex', '0');
+		list.find('.sf-s-list').addClass('sf-hide-opacity').attr('tabindex', '0');
 		$('html body').off('click.i_select');
 	},
 	close:function(){this._close();},
@@ -1016,11 +1015,11 @@ $.widget("Imperial.selectStyle", {
 		var $this = this;
 		var $select = this.element;
 		
-		$select.wrap('<div id="i-s-select-'+$this.uuid+'" data-id="'+$this.uuid+'" class="i-s-wrapper">');
+		$select.wrap('<div id="sf-s-select-'+$this.uuid+'" data-id="'+$this.uuid+'" class="sf-s-wrapper">');
 			
 		//Add class to input
 		if($.type($this.options.inputClass) === "string")
-			$select.addClass($this.options.inputClass).closest('.i-s-wrapper');
+			$select.addClass($this.options.inputClass).closest('.sf-s-wrapper');
 		else if($.type($this.options.inputClass) === "null"){}
 		else
 			console.exception('Wrong value for inputClass is have to be string.');
@@ -1033,7 +1032,7 @@ $.widget("Imperial.selectStyle", {
 			{
 				var classList = $select.attr('class').split(/\s+/);
 				$.each(classList, function(index, item) {
-					$select.closest('.i-r-wrapper').addClass('i-s-class-'+item);
+					$select.closest('.sf-r-wrapper').addClass('sf-s-class-'+item);
 				});
 			}
 		}
@@ -1046,17 +1045,17 @@ $.widget("Imperial.selectStyle", {
 		if($select.data().class)
 			$class = $select.data().class;
 
-		$select.closest('.i-s-wrapper').addClass($class);
+		$select.closest('.sf-s-wrapper').addClass($class);
 
 		//Add title to wrap or set from input
 		if($.type($this.options.wrapTitle) === "boolean")
 		{
 			if($this.options.wrapTitle === true)
-				$select.closest('.i-s-wrapper').attr('title', $select.attr('title'));
+				$select.closest('.sf-s-wrapper').attr('title', $select.attr('title'));
 		}
 		else if($.type($this.options.wrapTitle) === "string")
 		{
-			$select.closest('.i-s-wrapper').attr('title', $this.options.wrapTitle);
+			$select.closest('.sf-s-wrapper').attr('title', $this.options.wrapTitle);
 		}
 		else if($.type($this.options.wrapTitle) === "null"){}
 		else
@@ -1064,18 +1063,18 @@ $.widget("Imperial.selectStyle", {
 			console.exception('Wrong value for wrapTitle check documentation at www.agendo.pl');
 		}
 
-		$select.closest('.i-s-wrapper').append('<p class="i-s-holder">');
-		$select.closest('.i-s-wrapper').find('p.i-s-holder').append('<a href="javascript:void(0)">');
-		$select.closest('.i-s-wrapper').find('p.i-s-holder').append('<span class="i-s-button">');
+		$select.closest('.sf-s-wrapper').append('<p class="sf-s-holder">');
+		$select.closest('.sf-s-wrapper').find('p.sf-s-holder').append('<a href="javascript:void(0)">');
+		$select.closest('.sf-s-wrapper').find('p.sf-s-holder').append('<span class="sf-s-button">');
 		
 //		console.log($this.uuid+' '+$this.options.absolute);
 		if($this.options.absolute)
 		{
-			$('body').append('<div id="i-s-list-'+$this.uuid+'" class="i-s-list-wrap-absolute '+$class+'"><div class="i-s-list i-hide-opacity"><ul class="i-s-list-inner scrollbar-formated-default"></ul></div></div>');
+			$('body').append('<div id="sf-s-list-'+$this.uuid+'" class="sf-s-list-wrap-absolute '+$class+'"><div class="sf-s-list sf-hide-opacity"><ul class="sf-s-list-inner scrollbar-formated-default"></ul></div></div>');
 		}
 		else
 		{
-			$select.closest('.i-s-wrapper').append('<div class="i-s-list i-hide-opacity"><ul class="i-s-list-inner scrollbar-formated-default"></ul></div>');
+			$select.closest('.sf-s-wrapper').append('<div class="sf-s-list sf-hide-opacity"><ul class="sf-s-list-inner scrollbar-formated-default"></ul></div>');
 		}
 	},
 	
@@ -1097,13 +1096,13 @@ $.widget("Imperial.selectStyle", {
 				
 				if($(this).is(':selected'))
 				{
-					is_selected = ' i-s-active i-s-hover';
-					$this.element.closest('.i-s-wrapper').find('p.i-s-holder a').html($.trim(html.replace(/&nbsp;/g,'')));
+					is_selected = ' sf-s-active sf-s-hover';
+					$this.element.closest('.sf-s-wrapper').find('p.sf-s-holder a').html($.trim(html.replace(/&nbsp;/g,'')));
 				}
 				
 				if($(this).is(':disabled'))
 				{
-					is_disabled = ' i-s-option-disabled';
+					is_disabled = ' sf-s-option-disabled';
 				}
 				
 				if($this.options.absolute)
@@ -1111,7 +1110,7 @@ $.widget("Imperial.selectStyle", {
 					if(!($this.element.data().active_not_show_on_list && $(this).is(':selected')))
 					{
 						
-						var optionAdded = $('<li class="i-s-default'+is_selected+is_disabled+'"><input type="hidden" disabled value="'+$(this).val()+'" />'+html+'</li>').appendTo($('#i-s-list-'+$this.uuid).find('ul.i-s-list-inner'));
+						var optionAdded = $('<li class="sf-s-default'+is_selected+is_disabled+'"><input type="hidden" disabled value="'+$(this).val()+'" />'+html+'</li>').appendTo($('#sf-s-list-'+$this.uuid).find('ul.sf-s-list-inner'));
 						if(typeof($thisO.attr('class')) != 'undefined')
 						{
 							optionAdded.addClass($thisO.attr('class'));
@@ -1124,7 +1123,7 @@ $.widget("Imperial.selectStyle", {
 				{
 					if(!($this.element.data().active_not_show_on_list && $(this).is(':selected')))
 					{	
-						var optionAdded = $('<li class="i-s-default'+is_selected+is_disabled+'"><input type="hidden" disabled value="'+$(this).val()+'" />'+html+'</li>').appendTo($this.element.closest('.i-s-wrapper').find('ul.i-s-list-inner'));
+						var optionAdded = $('<li class="sf-s-default'+is_selected+is_disabled+'"><input type="hidden" disabled value="'+$(this).val()+'" />'+html+'</li>').appendTo($this.element.closest('.sf-s-wrapper').find('ul.sf-s-list-inner'));
 						if(typeof($thisO.attr('class')) != 'undefined')
 						{
 							optionAdded.addClass($thisO.attr('class'));
@@ -1135,9 +1134,9 @@ $.widget("Imperial.selectStyle", {
 			}
 			else
 			{
-				var $wrap = $('<li></li>').addClass('i-s-optgroup').append('<ul class="i-s-optgroup-list"></ul>');
+				var $wrap = $('<li></li>').addClass('sf-s-optgroup').append('<ul class="sf-s-optgroup-list"></ul>');
 				if($(this).attr('label').length > 0)
-					$wrap.find('ul').append('<li><p class="i-s-optgroup-label">'+$(this).attr('label')+'</p></li>');
+					$wrap.find('ul').append('<li><p class="sf-s-optgroup-label">'+$(this).attr('label')+'</p></li>');
 
 				$(this).find('option').each(function()
 				{
@@ -1149,18 +1148,18 @@ $.widget("Imperial.selectStyle", {
 					
 					if($(this).is(':selected'))
 					{
-						is_selected = ' i-s-active i-s-hover';
-						$this.element.closest('.i-s-wrapper').find('p.i-s-holder a').html(html);
+						is_selected = ' sf-s-active sf-s-hover';
+						$this.element.closest('.sf-s-wrapper').find('p.sf-s-holder a').html(html);
 					}
 					
 					if($(this).is(':disabled'))
 					{
-						is_disabled = ' i-s-option-disabled';
+						is_disabled = ' sf-s-option-disabled';
 					}
 					
 					if(!($this.element.data().active_not_show_on_list && $(this).is(':selected')))
 					{
-						var optionAdded = $('<li class="i-s-default'+is_selected+is_disabled+'"><input type="hidden" disabled value="'+$(this).val()+'" />'+html+'</li>').appendTo($wrap.find('ul'));
+						var optionAdded = $('<li class="sf-s-default'+is_selected+is_disabled+'"><input type="hidden" disabled value="'+$(this).val()+'" />'+html+'</li>').appendTo($wrap.find('ul'));
 						if(typeof($thisO.attr('class')) != 'undefined')
 						{
 							optionAdded.addClass($thisO.attr('class'));
@@ -1171,23 +1170,22 @@ $.widget("Imperial.selectStyle", {
 
 				if($this.options.absolute)
 				{
-					$('#i-s-list-'+$this.uuid).find('ul.i-s-list-inner').append($wrap);
+					$('#sf-s-list-'+$this.uuid).find('ul.sf-s-list-inner').append($wrap);
 				}
 				else {
-					$this.element.closest('.i-s-wrapper').find('ul.i-s-list-inner').append($wrap);
+					$this.element.closest('.sf-s-wrapper').find('ul.sf-s-list-inner').append($wrap);
 				}
 			}
 		});
 	}
 });
 
-$.widget( "Imperial.radioStyle", {
+$.widget("SuperForm.superRadio", {
 	
 	//defaults options for plugin
 	options: {
 		hover:false,
 		wrapClass: null,
-		inputClass: null,
 		wrapTitle: null,
 		ignoredClass:null,
 		//calbacks
@@ -1199,102 +1197,39 @@ $.widget( "Imperial.radioStyle", {
 	},
 	
     _create: function() {
+    	this.vars = {
+			old: null,
+			observer: null
+    	};
+    	
 		var $this = this;
 		var $input = $this.element;
 		
 		if($input.attr('type') !== 'radio' || $input.hasClass($this.options.ignoredClass))
 			return false;
 		
-		if(!$input.hasClass('i-r-styled'))
-		{
-			if($input.parent().is('label'))
-				$input.parent().wrap('<div class="i-r-wrapper">');
-			else if(typeof($input.attr('id')) !== 'undefined')
-			{
-				var element = $('label[for="'+$input.attr('id')+'"]');
-				if(element)
-				{
-					element.hide();
-					$input.wrap('<label>').parent().append(element.html()).wrap('<div class="i-r-wrapper">');
-				}
-			}
-			else
-			{
-				$input.wrap('<div class="i-r-wrapper"><label class="i-r-only-radio">');
-			}
-			
-			//Add class to input
-			if($.type($this.options.inputClass) === "string")
-				$input.addClass($this.options.inputClass).closest('.i-r-wrapper');
-			else if($.type($this.options.inputClass) === "null"){}
-			else
-				console.exception('Wrong value for inputClass is have to be string.');
-			
-			//Add class to wrap
-			if($.type($this.options.wrapClass) === "boolean")
-			{
-				if($this.options.wrapClass === true)
-				{
-					if($input.attr('class'))
-					{
-						var classList = $input.attr('class').split(/\s+/);
-						$.each(classList, function(index, item) {
-							$input.closest('.i-r-wrapper').addClass('i-r-class-'+item);
-						});
-					}
-				}
-			}
-			else if($.type($this.options.wrapClass) === "string")
-				$input.closest('.i-r-wrapper').addClass($this.options.wrapClass);
-			else if($.type($this.options.wrapClass) === "null"){}
-			else
-				console.exception('Wrong value for wrapClass is have to be string.');
-			
-			//Add title to wrap or set from input
-			if($.type($this.options.wrapTitle) === "boolean")
-			{
-				if($this.options.wrapTitle === true)
-					$input.closest('.i-r-wrapper').attr('title', $input.attr('title'));
-			}
-			else if($.type($this.options.wrapTitle) === "string")
-			{
-				$input.closest('.i-r-wrapper').attr('title', $this.options.wrapTitle);
-			}
-			else if($.type($this.options.wrapTitle) === "null"){}
-			else
-			{
-				console.exception('Wrong value for wrapTitle check documentation at www.agendo.pl');
-			}
-			
-			$input.attr('tabindex', '-1');
-			
-			if(typeof($input.attr('style')) != 'undefined')
-				$input.closest('.i-r-wrapper').attr('style', $input.attr('style'));
-			
-			$input.closest('.i-r-wrapper label').prepend('<a href="javascript:void(0)" class="i-r-default">');
-			$input.closest('.i-r-wrapper').find('a.i-r-default').append('<span>');
-			$input.addClass('i-r-styled i-hide');
-		}
+		$this._renderRadio();
+		$this._initAtributes();
+		$this._initEvents();
 
 		$this._trigger( "onCreate", null, $input);
-		
-		if($input.is(':checked'))
-			$input.closest('.i-r-wrapper').addClass('i-r-clicked');
-
-		if($input.is(':disabled'))
+    },
+	
+    _initEvents: function()
+    {
+    	var $this = this;
+		var $input = $this.element;
+    	
+		$input.closest('.sf-r-wrapper').find('label').off('click.i_radio').on('click.i_radio', function(event)
 		{
-			$input.closest('.i-r-wrapper').addClass('i-r-disabled');
-		}
-		else
-		{
-			$input.closest('.i-r-wrapper').find('label').off('click.i_radio').on('click.i_radio', function(event)
+			if(!$input.is(':disabled'))
 			{
 				$this._trigger( "onClick", event, $input);
 				if(!$input.is(':checked'))
 				{
 					$('input[name="'+$input.attr('name')+'"]').each(function()
 					{
-						$(this).closest('.i-r-wrapper').find('a.i-r-default').removeClass('i-r-clicked');;
+						$(this).closest('.sf-r-wrapper').find('a.sf-r-default').removeClass('sf-r-clicked');;
 					});
 					
 					$input.prop('checked', true);
@@ -1306,74 +1241,171 @@ $.widget( "Imperial.radioStyle", {
 						{
 							$input.valid();
 							if($input.hasClass(validator.settings.errorClass))
-								$input.closest('.i-r-wrapper').addClass(validator.settings.errorClass);
+								$input.closest('.sf-r-wrapper').addClass(validator.settings.errorClass);
 							else
-								$input.closest('.i-r-wrapper').removeClass(validator.settings.errorClass);
+								$input.closest('.sf-r-wrapper').removeClass(validator.settings.errorClass);
 						}
 					}
-					//Tego nie trzeba bo na onchange jest aktualizacja statusu przycisku wywalić jak nie będzie problemów...
-//					$(this).find('a.i-r-default').toggleClass('i-r-clicked');
+					
 					$this._trigger( "onChange", null, $input);
 				}
-				return false;
-			});
-			
-			$input.off('change.i-radio').on('change.i-radio', function(){
-				if($(this).is(':checked') && !$(this).closest('.i-r-wrapper').find('a.i-r-default').hasClass('i-r-clicked'))
+			}
+			return false;
+		});
+		
+		$input.off('change.sf-radio').on('change.sf-radio', function(){
+			if(!$input.is(':disabled'))
+			{
+				if($(this).is(':checked') && !$(this).closest('.sf-r-wrapper').find('a.sf-r-default').hasClass('sf-r-clicked'))
 				{
 					$('input[name="'+$(this).attr('name')+'"]').each(function()
 					{
-						$(this).closest('.i-r-wrapper').removeClass('i-r-clicked');;
+						$(this).closest('.sf-r-wrapper').removeClass('sf-r-clicked');
 					});
-					$(this).closest('.i-r-wrapper').addClass('i-r-clicked');
+					$(this).closest('.sf-r-wrapper').addClass('sf-r-clicked');
 				}
-				else if(!$(this).is(':checked') && $(this).closest('.i-r-wrapper').find('a.i-r-default').hasClass('i-r-clicked'))
+				else if(!$(this).is(':checked') && $(this).closest('.sf-r-wrapper').find('a.sf-r-default').hasClass('sf-r-clicked'))
 				{
 					$('input[name="'+$(this).attr('name')+'"]').each(function()
 					{
-						$(this).closest('.i-r-wrapper').removeClass('i-r-clicked');;
+						$(this).closest('.sf-r-wrapper').removeClass('sf-r-clicked');;
 					});
-					$(this).closest('.i-r-wrapper').removeClass('i-r-clicked');
+					$(this).closest('.sf-r-wrapper').removeClass('sf-r-clicked');
 				}
-			});
-			
-			$input.closest('.i-r-wrapper').find('label a').not('.i-r-default').off('click').on('click', function(e)
+			}
+		});
+		
+		$input.closest('.sf-r-wrapper').find('label a').not('.sf-r-default').off('click').on('click', function(e)
+		{
+			if(!$input.is(':disabled'))
 			{
 				if($(this).attr('target') == '_blank')
                     window.open($(this).attr('href'));
                 else
                     window.location.href = $(this).attr('href');
-                    
-                e.preventDefault();
-				e.stopPropagation();
-			});
-			
-			$input.closest('.i-r-wrapper').off('click.i_radio').on('click.i_radio', function(){
-				$input.closest('.i-r-wrapper').find('label').click();
-				return false;
-			});
-			
-			if($input.data().hover === true || $this.options.hover)
-			{
-				$input.closest('.i-r-wrapper').off('mouseenter.i_radio').on('mouseenter.i_radio', function(event)
-				{
-					$(this).addClass('i-r-hover');
-					$this._trigger( "onEnter", event, $input);
-				});
-
-				$input.closest('.i-r-wrapper').off('mouseleave.i_radio').on('mouseleave.i_radio', function(event)
-				{
-					$(this).removeClass('i-r-hover');
-					$this._trigger( "onLeave", event, $input);
-				});
 			}
+			
+            e.preventDefault();
+			e.stopPropagation();
+		});
+		
+		$input.closest('.sf-r-wrapper').off('click.i_radio').on('click.i_radio', function(){
+			if(!$input.is(':disabled'))
+			{
+				$input.closest('.sf-r-wrapper').find('label').click();
+			}
+			
+			return false;
+		});
+		
+		if($input.data().hover === true || $this.options.hover)
+		{
+			$input.closest('.sf-r-wrapper').off('mouseenter.i_radio').on('mouseenter.i_radio', function(event)
+			{
+				if(!$input.is(':disabled'))
+				{
+					$(this).addClass('sf-r-hover');
+					$this._trigger( "onEnter", event, $input);
+				}
+			});
+
+			$input.closest('.sf-r-wrapper').off('mouseleave.i_radio').on('mouseleave.i_radio', function(event)
+			{
+				if(!$input.is(':disabled'))
+				{
+					$(this).removeClass('sf-r-hover');
+					$this._trigger( "onLeave", event, $input);
+				}
+			});
 		}
     },
+    
+    _initAtributes: function()
+    {
+    	var $this = this;
+		var $input = $this.element;
 		
+		//Add class to wrap
+		if($.type($this.options.wrapClass) === "boolean")
+		{
+			if($this.options.wrapClass === true)
+				if($input.data('class'))
+					$input.closest('.sf-r-wrapper').addClass($input.data('class'));
+		}
+		else if($.type($this.options.wrapClass) === "string")	
+			$input.closest('.sf-r-wrapper').addClass($this.options.wrapClass);
+		else if($.type($this.options.wrapClass) === "null"){}
+		else
+			console.exception('Wrong value for param wrapClass is have to be string or boolean.');
+    	
+    	//Add title to wrap or set from input
+		if($.type($this.options.wrapTitle) === "boolean")
+		{
+			if($this.options.wrapTitle === true)
+			{
+				$input.closest('.sf-r-wrapper').attr('title', $input.attr('title'));
+			}
+		}
+		else if($.type($this.options.wrapTitle) === "string")
+		{
+			$input.closest('.sf-r-wrapper').attr('title', $this.options.wrapTitle);
+		}
+		else if($.type($this.options.wrapTitle) === "null"){}
+		else
+		{
+			console.exception('Wrong value for wrapTitle is have to be string or boolean');
+		}
+    },
+    
+    _renderRadio: function()
+    {
+    	var $this = this;
+		var $input = $this.element;
+		
+		if(!$input.hasClass('sf-r-styled'))
+		{
+			if($input.parent().is('label'))
+			{
+				$this.vars.old = 'inner';
+				$input.parent().wrap('<div class="sf-r-wrapper">');
+			}
+			else if(typeof($input.attr('id')) !== 'undefined')
+			{
+				var element = $('label[for="'+$input.attr('id')+'"]');
+				if(element)
+				{
+					$this.vars.old = 'outside';
+					element.addClass('sf-hide');
+					$input.wrap('<label>').parent().append(element.html()).wrap('<div class="sf-r-wrapper">');
+				}
+			}
+			else
+			{
+				$this.vars.old = 'empty'
+				$input.wrap('<div class="sf-r-wrapper"><label class="sf-r-only-radio">');
+			}
+			
+			$input.attr('tabindex', '-1');
+						
+			if(typeof($input.attr('style')) != 'undefined')
+				$input.closest('.sf-r-wrapper').attr('style', $input.attr('style'));
+			
+			$input.closest('.sf-r-wrapper label').prepend('<a href="javascript:void(0)" class="sf-r-default">');
+			$input.closest('.sf-r-wrapper').find('a.sf-r-default').append('<span>');
+			$input.addClass('sf-r-styled sf-hide');
+		}
+
+		if($input.is(':checked'))
+			$input.closest('.sf-r-wrapper').addClass('sf-r-clicked');
+		
+		if($input.is(':disabled'))
+			$input.closest('.sf-r-wrapper').addClass('sf-r-disabled');
+    },
+    
 	_destroy:function()
 	{
-		this.element.removeClass('i-r-styled');
-		this.element.closest('.i-r-wrapper').replaceWith(this.element);
+		this.element.removeClass('sf-r-styled');
+		this.element.closest('.sf-r-wrapper').replaceWith(this.element);
 	},
 	destroy:function(){this._destroy();},
 	
@@ -1385,118 +1417,135 @@ $.widget( "Imperial.radioStyle", {
 	refresh:function(){this._refresh();}
 });
 
-$.widget( "Imperial.checkboxStyle", {
+$.widget("SuperForm.superCheckbox", {
 //	widgetEventPrefix: "imperial",
 	
 	//defaults options for plugin
 	options: {
 		hover:false,
 		wrapClass: true,
-		inputClass: 'i-ch-ignored',
 		wrapTitle: true,
-		ignoredClass:null,
+		ignoredClass:"sf-ch-ignored",
 		//calbacks
 		onEnter:null,
 		onLeave:null,
 		onChange:null,
 		onCreate:null,
-		onClick:null
+		onClick:null,
+		proxy: null
 	},
 	
     _create: function() {
+    	this.vars = {
+			old: null,
+			observer: null
+    	};
+    	
 		var $this = this;
 		var $input = $this.element;
 		
 		if($input.attr('type') !== 'checkbox' || $input.hasClass($this.options.ignoredClass))
 			return false;
 	
-		if(!$input.hasClass('i-ch-styled'))
+		$this._renderCheckbox();
+		$this._initAtributes();
+		$this._initEvents();
+		$this._initObserver();
+		$this._update();
+		
+		$this._trigger( "onCreate", null, $input);
+		
+		return 'test';
+    },
+	
+    _renderCheckbox: function()
+    {
+    	var $this = this;
+    	var $input = $this.element;
+    	
+    	if(!$input.hasClass('sf-ch-styled'))
 		{
 			if($input.parent().is('label'))
-				$input.parent().wrap('<div class="i-ch-wrapper">');
+			{
+				$this.vars.old = 'inner';
+				$input.parent().wrap('<div class="sf-ch-wrapper">');
+			}
 			else if(typeof($input.attr('id')) !== 'undefined')
 			{
 				var element = $('label[for="'+$input.attr('id')+'"]')
 				if(element)
 				{
-					element.hide();
-					$input.wrap('<label>').parent().append(element.html()).wrap('<div class="i-ch-wrapper">');
+					$this.vars.old = 'outside';
+					element.addClass('sf-hide');
+					$input.wrap('<label>').parent().append(element.html()).wrap('<div class="sf-ch-wrapper">');
 				}
 			}
 			else
 			{
-				$input.wrap('<div class="i-ch-wrapper"><label class="i-ch-only-checkbox">');
-			}
-			
-			//Add class to input
-			if($.type($this.options.inputClass) === "string")
-				$input.addClass($this.options.inputClass).closest('.i-ch-wrapper');
-			else if($.type($this.options.inputClass) === "null"){}
-			else
-				console.exception('Wrong value for inputClass is have to be string.');
-			
-			//Add class to wrap
-			if($.type($this.options.wrapClass) === "boolean")
-			{
-				if($this.options.wrapClass === true)
-				{
-					if($input.attr('class'))
-					{
-						var classList = $input.attr('class').split(/\s+/);
-						$.each(classList, function(index, item) {
-							$input.closest('.i-ch-wrapper').addClass('i-ch-class-'+item);
-						});
-					}
-				}
-			}
-			else if($.type($this.options.wrapClass) === "string")	
-				$input.closest('.i-ch-wrapper').addClass($this.options.wrapClass);
-			else if($.type($this.options.wrapClass) === "null"){}
-			else
-				console.exception('Wrong value for wrapClass is have to be string.');
-			
-			var $class = '';
-			if($input.data('class'))
-			{
-				$class = $input.data('class');
-			}
-
-			$input.closest('.i-ch-wrapper').addClass($class);
-			
-			//Add title to wrap or set from input
-			if($.type($this.options.wrapTitle) === "boolean")
-			{
-				if($this.options.wrapTitle === true)
-				{
-					$input.closest('.i-ch-wrapper').attr('title', $input.attr('title'));
-				}
-			}
-			else if($.type($this.options.wrapTitle) === "string")
-			{
-				$input.closest('.i-ch-wrapper').attr('title', $this.options.wrapTitle);
-			}
-			else if($.type($this.options.wrapTitle) === "null"){}
-			else
-			{
-				console.exception('Wrong value for wrapTitle check documentation at www.agendo.pl');
+				$this.vars.old = 'empty'
+				$input.wrap('<div class="sf-ch-wrapper"><label class="sf-ch-only-checkbox">');
 			}
 			
 			$input.attr('tabindex', '-1');
 			
 			if(typeof($input.attr('style')) != 'undefined')
-				$input.closest('.i-ch-wrapper').attr('style', $input.attr('style'));
+				$input.closest('.sf-ch-wrapper').attr('style', $input.attr('style'));
 			
-			$input.closest('.i-ch-wrapper label').prepend('<a href="javascript:void(0)" class="i-ch-default">');
-			$input.closest('.i-ch-wrapper').find('a.i-ch-default').append('<span>');
-			$input.addClass('i-ch-styled i-hide');
+			$input.closest('.sf-ch-wrapper label').prepend('<a href="javascript:void(0)" class="sf-ch-default">');
+			$input.closest('.sf-ch-wrapper').find('a.sf-ch-default').append('<span>');
+			$input.addClass('sf-ch-styled sf-hide');
+			
+			if($input.is(':checked'))
+				$input.closest('.sf-ch-wrapper').addClass('sf-ch-clicked');
+			
+			if($input.is(':disabled'))
+				$input.closest('.sf-ch-wrapper').addClass('sf-ch-disabled');
 		}
+    },
+    
+    _initAtributes: function()
+    {
+    	var $this = this;
+		var $input = $this.element;
 		
-		$this._trigger( "onCreate", null, $input);
-
-		if($input.is(':checked'))
-			$input.closest('.i-ch-wrapper').addClass('i-ch-clicked');
-		
-		$input.closest('.i-ch-wrapper').find('label').off('click.i_checkbox').on('click.i_checkbox', function(event)
+		//Add class to wrap
+		if($.type($this.options.wrapClass) === "boolean")
+		{
+			if($this.options.wrapClass === true)
+				if($input.data('class'))
+					$input.closest('.sf-ch-wrapper').addClass($input.data('class'));
+		}
+		else if($.type($this.options.wrapClass) === "string")	
+			$input.closest('.sf-ch-wrapper').addClass($this.options.wrapClass);
+		else if($.type($this.options.wrapClass) === "null"){}
+		else
+			console.exception('Wrong value for param wrapClass is have to be string or boolean.');
+    	
+    	//Add title to wrap or set from input
+		if($.type($this.options.wrapTitle) === "boolean")
+		{
+			if($this.options.wrapTitle === true)
+			{
+				$input.closest('.sf-ch-wrapper').attr('title', $input.attr('title'));
+			}
+		}
+		else if($.type($this.options.wrapTitle) === "string")
+		{
+			$input.closest('.sf-ch-wrapper').attr('title', $this.options.wrapTitle);
+		}
+		else if($.type($this.options.wrapTitle) === "null"){}
+		else
+		{
+			console.exception('Wrong value for wrapTitle is have to be string or boolean');
+		}
+    },
+    
+    _initEvents: function()
+    {
+    	var $this = this;
+		var $input = $this.element;
+    	
+    	$input.closest('.sf-ch-wrapper').find('label').off('click.i_checkbox').on('click.i_checkbox', function(event)
 		{
 			if(!$input.is(':disabled'))
 			{
@@ -1510,7 +1559,7 @@ $.widget( "Imperial.checkboxStyle", {
 					$input.prop('checked', true);
 				}
 
-				$input.closest('.i-ch-wrapper').toggleClass('i-ch-clicked');
+				$input.closest('.sf-ch-wrapper').toggleClass('sf-ch-clicked');
 				$input.triggerHandler("click");
 				$input.change();
 				if($input.closest('form').length && $.isFunction($input.valid)
@@ -1522,9 +1571,9 @@ $.widget( "Imperial.checkboxStyle", {
 						$input.valid();
 
 						if($input.hasClass(validator.settings.errorClass))
-							$input.closest('.i-ch-wrapper').addClass(validator.settings.errorClass);
+							$input.closest('.sf-ch-wrapper').addClass(validator.settings.errorClass);
 						else
-							$input.closest('.i-ch-wrapper').removeClass(validator.settings.errorClass);
+							$input.closest('.sf-ch-wrapper').removeClass(validator.settings.errorClass);
 					}
 				}
 
@@ -1533,17 +1582,17 @@ $.widget( "Imperial.checkboxStyle", {
 			return false;
 		});
 
-		$input.off('change.i-checkbox').on('change.i-checkbox', function(){
+		$input.off('change.sf-checkbox').on('change.sf-checkbox', function(){
 			if(!$input.is(':disabled'))
 			{
-				if($input.is(':checked') && !$input.closest('.i-ch-wrapper').hasClass('i-ch-clicked'))
-					$input.closest('.i-ch-wrapper').addClass('i-ch-clicked');
-				else if(!$input.is(':checked') && $input.closest('.i-ch-wrapper').hasClass('i-ch-clicked'))
-					$input.closest('.i-ch-wrapper').removeClass('i-ch-clicked');
+				if($input.is(':checked') && !$input.closest('.sf-ch-wrapper').hasClass('sf-ch-clicked'))
+					$input.closest('.sf-ch-wrapper').addClass('sf-ch-clicked');
+				else if(!$input.is(':checked') && $input.closest('.sf-ch-wrapper').hasClass('sf-ch-clicked'))
+					$input.closest('.sf-ch-wrapper').removeClass('sf-ch-clicked');
 			}
 		});
 
-		$input.closest('.i-ch-wrapper').find('label a').not('.i-ch-default').off('click').on('click', function(e)
+		$input.closest('.sf-ch-wrapper').find('label a').not('.sf-ch-default').off('click').on('click', function(e)
 		{
 			if(!$input.is(':disabled'))
 			{
@@ -1557,65 +1606,71 @@ $.widget( "Imperial.checkboxStyle", {
 			e.stopPropagation();
 		});
 		
-		if($input.is(':disabled'))
+		if($input.data().hover === true || $this.options.hover)
 		{
-			$input.closest('.i-ch-wrapper').addClass('i-ch-disabled');
-		}
-		else
-		{
-			if($input.data().hover === true || $this.options.hover)
+			$input.closest('.sf-ch-wrapper').off('mouseenter.i_checkbox').on('mouseenter.i_checkbox', function(event)
 			{
-				$input.closest('.i-ch-wrapper').off('mouseenter.i_checkbox').on('mouseenter.i_checkbox', function(event)
+				if(!$input.is(':disabled'))
 				{
-					$(this).addClass('i-ch-hover');
+					$(this).addClass('sf-ch-hover');
 					$this._trigger( "onEnter", event, $input);
-				});
+				}
+			});
 
-				$input.closest('.i-ch-wrapper').off('mouseleave.i_checkbox').on('mouseleave.i_checkbox', function(event)
+			$input.closest('.sf-ch-wrapper').off('mouseleave.i_checkbox').on('mouseleave.i_checkbox', function(event)
+			{
+				if(!$input.is(':disabled'))
 				{
-					$(this).removeClass('i-ch-hover');
+					$(this).removeClass('sf-ch-hover');
 					$this._trigger( "onLeave", event, $input);
-				});
-			}
+				}
+			});
 		}
     },
-	
+    
+    _initObserver: function()
+    {
+    	var $this = this;
+		var $input = $this.element;
+    	
+    	callback = function(mutationList, observer)
+    	{
+    		$this._update();
+    	};
+    	
+    	var observerOptions = {
+		  childList: true,
+		  attributes: true,
+		  subtree: true
+		}
+    	
+    	$this.vars.observer = new MutationObserver(callback);
+    	$this.vars.observer.observe($this.element[0], observerOptions);
+    },
+    
 	_update: function()
 	{
 		var $this = this;
 		var $input = $this.element;
 		
+		$this._initAtributes();
+		
 		if($input.is(':disabled'))
 		{
-			$input.closest('.i-ch-wrapper').addClass('i-ch-disabled');
+			$input.closest('.sf-ch-wrapper').addClass('sf-ch-disabled');
 		}
 		else
 		{
-			$input.closest('.i-ch-wrapper').removeClass('i-ch-disabled');
+			$input.closest('.sf-ch-wrapper').removeClass('sf-ch-disabled');
 		}
 		
 		if($input.is(':checked'))
 		{
-			$input.closest('.i-ch-wrapper').addClass('i-ch-clicked');
+			$input.closest('.sf-ch-wrapper').addClass('sf-ch-clicked');
 		}
 		else
 		{
-			$input.closest('.i-ch-wrapper').removeClass('i-ch-clicked');
-		}
-		
-		if($input.data().hover === true || $this.options.hover)
-		{
-			$input.closest('.i-ch-wrapper').off('mouseenter.i_checkbox').on('mouseenter.i_checkbox', function(event)
-			{
-				$(this).addClass('i-ch-hover');
-				$this._trigger( "onEnter", event, $input);
-			});
-
-			$input.closest('.i-ch-wrapper').off('mouseleave.i_checkbox').on('mouseleave.i_checkbox', function(event)
-			{
-				$(this).removeClass('i-ch-hover');
-				$this._trigger( "onLeave", event, $input);
-			});
+			$input.closest('.sf-ch-wrapper').removeClass('sf-ch-clicked');
 		}
 	},
 	
@@ -1626,9 +1681,28 @@ $.widget( "Imperial.checkboxStyle", {
 	
 	_destroy:function()
 	{
-		this.element.removeClass('i-ch-styled i-hide');
-		this.element.removeData('ImperialCheckboxStyle');
-		this.element.closest('.i-ch-wrapper').replaceWith(this.element);
+		if(this.vars.observer)
+			this.vars.observer.disconnect();
+		
+		this.element.removeClass('sf-ch-styled sf-hide');
+		this.element.removeData('SuperFormSuperCheckbox');
+		
+		console.log(this.vars.old);
+		switch (this.vars.old) {
+			case 'inner':
+				old = this.element.closest('label').off('click.i_checkbox');
+				old.find('a').remove();
+				break;
+			case 'outside':
+				$('label[for="'+this.element.attr('id')+'"]').removeClass('sf-hide');
+				old = this.element;
+				break;
+			default:
+				old = this.element;
+				break;
+		}
+		
+		this.element.closest('.sf-ch-wrapper').replaceWith(old);
 	},
 	destroy:function(){this._destroy();},
 	
@@ -1640,7 +1714,7 @@ $.widget( "Imperial.checkboxStyle", {
 	refresh:function(){this._refresh();}
 });
 
-$.widget( "Imperial.fileUploaderStyle", {
+$.widget( "SuperForm.fileUploaderStyle", {
 	
 	options: {
 		ignoredClass:null,
@@ -1663,11 +1737,11 @@ $.widget( "Imperial.fileUploaderStyle", {
 		var $input = $this.element;
 		this.handlers = {};
 		
-		if($input.attr('type') !== 'file' || $input.hasClass($this.options.ignoredClass) || $input.hasClass('i-file-uploader-input'))
+		if($input.attr('type') !== 'file' || $input.hasClass($this.options.ignoredClass) || $input.hasClass('sf-file-uploader-input'))
 			return false;
 		
 		//Utowrzenie html dla przycisku
-		this.handlers.btn =  this.element.wrap('<div class="i-file-upload"></div>').wrap('<div class="i-file-upload-btn-wrap"></div>').wrap('<a class="i-file-upload-btn-handler">'+this.options.btn.name+'</a>').parent();
+		this.handlers.btn =  this.element.wrap('<div class="sf-file-upload"></div>').wrap('<div class="sf-file-upload-btn-wrap"></div>').wrap('<a class="sf-file-upload-btn-handler">'+this.options.btn.name+'</a>').parent();
 		
 		if($input.is(':disabled'))
 			this.handlers.btn.addClass('disabled');
@@ -1675,14 +1749,14 @@ $.widget( "Imperial.fileUploaderStyle", {
 		this.handlers.wrap = this.handlers.btn.parent();
 		
 		this.handlers.btn.prepend(this.options.btn.icon);
-		this.handlers.file = this.handlers.wrap.parent().append('<span class="i-file-upload-file-name">'+this.options.file.not_selected+'</span>').find('.i-file-upload-file-name');
+		this.handlers.file = this.handlers.wrap.parent().append('<span class="sf-file-upload-file-name">'+this.options.file.not_selected+'</span>').find('.sf-file-upload-file-name');
 		
 		//Dodanie dodatkowych klas
 		this.handlers.wrap.addClass(this.options.class.wrap);
 		this.handlers.btn.addClass(this.options.class.btn);
 		
 		//Ukrycie inputa
-		$input.addClass('i-file-uploader-input');
+		$input.addClass('sf-file-uploader-input');
 		
 		//Ustawienie tab indexu żeby nie obowiązywał
 		$input.attr('tabindex', -1);
@@ -1701,7 +1775,7 @@ $.widget( "Imperial.fileUploaderStyle", {
 	},
 	
 	_destroy: function(){
-		this.element.removeClass('i-file-uploader-input');
+		this.element.removeClass('sf-file-uploader-input');
 		this.options.handlers.wrap.replaceWith(this.element);
 		this.options.handlers.btn.remove();
 	},
