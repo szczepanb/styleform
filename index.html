@@ -16,6 +16,12 @@
 	<script src="js/additional-methods.js" type="text/javascript"></script>
 	<script src="js/jq.styleform.js" type="text/javascript"></script>
 	<script src="js/init.js" type="text/javascript"></script>
+	<script type="text/javascript">
+		// Registering Service Worker
+		if('serviceWorker' in navigator) {
+			navigator.serviceWorker.register('/sw.js');
+		};
+	</script>
 </head>
 <body>
 	<header class="width-content">
