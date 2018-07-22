@@ -1,6 +1,6 @@
 {
-  "short_name": "Maps",
-  "name": "Google Maps",
+  "short_name": "SF",
+  "name": "SuperForm",
   "icons": [
     {
       "src": "/gfx/manifest.png",
@@ -9,10 +9,10 @@
     }
   ],
   "start_url": "/",
-  "background_color": "#3367D6",
+  "background_color": "#6dcaf3",
   "display": "standalone",
   "related_applications": [{
 	"platform": "web"
 }],
-  "theme_color": "#3367D6"
+  "theme_color": "#6dcaf3"
 }
