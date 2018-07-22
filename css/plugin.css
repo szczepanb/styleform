@@ -28,21 +28,21 @@
 	padding-left: 13px;
 }
 
-.sf-ch-disabled a.sf-ch-default
+.sf-ch-disabled .sf-ch-default
 {
 	background: #f1f0f1;
 }
 
-.sf-ch-disabled a.sf-ch-default span
+.sf-ch-disabled .sf-ch-default span
 {
 	color: #777777;
 }
 
-a.sf-ch-default
+.sf-ch-default
 {
 	display: inline-block;
-	width: 13px;
-	height: 13px;
+	width: 24px;
+	height: 24px;
 	border: 1px solid #c5c5c5;
 	background: #ffffff;
 	position: relative;
@@ -53,22 +53,28 @@ a.sf-ch-default
 	box-sizing: border-box;
 }
 
-.sf-ch-wrapper label.sf-ch-only-checkbox a.sf-ch-default
+.sf-ch-wrapper.error .sf-ch-default
+{
+	border: 1px solid #cb0000;
+}
+
+.sf-ch-wrapper label.sf-ch-only-checkbox .sf-ch-default
 {
 	margin-left: -13px;
 	margin-right: 0;
 }
 
-a.sf-ch-default span
+.sf-ch-default span
 {
 	position: absolute;
-	left: -1px;
+	left: 1px;    
 	right: 0;
-	top: -6px;
+	top: 2px;
 	bottom: 0;
 	margin: auto;
-	width: 20px;
-	height: 20px;
+	width: 24px;
+	height: 24px;
+	color: #6dcaf3;
 	-webkit-transition: all 300ms ease-in-out;
     -moz-transition: all 300ms ease-in-out;
     -o-transition: all 300ms ease-in-out;
@@ -90,49 +96,14 @@ a.sf-ch-default span
 	-moz-osx-font-smoothing: grayscale;
 }
 
-a.sf-ch-default span:before
+.sf-ch-default span:before
 {
 	content: "done"
 }
 
-.sf-ch-clicked a.sf-ch-default span
+.sf-ch-clicked .sf-ch-default span
 {
 	opacity: 1;
-}
-
-.sf-ch-class-sf-big-checkbox a.sf-ch-default
-{
-	border: 2px solid #b5dff1;
-	width: 27px;
-	height: 27px;
-}
-
-.sf-ch-class-sf-big-checkbox a.sf-ch-default span
-{
-	right: -3px;
-}
-
-.sf-ch-class-sf-big-checkbox-form label
-{
-	font-weight: 500;
-	font-size: 13px;
-}
-
-.sf-ch-class-sf-big-checkbox-form a.sf-ch-default
-{
-	border: 1px solid #c1c1c1;
-	width: 27px;
-	height: 27px;
-}
-
-.sf-ch-class-sf-big-checkbox-form a.sf-ch-default span
-{
-	right: -3px;
-	width: 19px;
-	height: 20px;
-	top: 0px;
-	bottom: 0;
-	left: 0px;
 }
 
 
@@ -159,7 +130,17 @@ a.sf-ch-default span:before
 	vertical-align: middle;
 }
 
-a.sf-r-default
+.sf-r-disabled .sf-r-default
+{
+	background: #f1f0f1;
+}
+
+.sf-r-disabled .sf-r-default span
+{
+	background: #777777;
+}
+
+.sf-r-default
 {
 	display: inline-block;
 	width: 24px;
@@ -176,7 +157,12 @@ a.sf-r-default
 	box-sizing: border-box;
 }
 
-.sf-r-clicked a span
+.sf-r-wrapper.error .sf-r-default
+{
+	border:1px solid #cb0000;
+}
+
+.sf-r-clicked .sf-r-default span
 {
 	position: absolute;
 	left: 0;
@@ -190,7 +176,7 @@ a.sf-r-default
 	-webkit-border-radius: 100%; 
 	-moz-border-radius: 100%; 
 	border-radius: 100%; 
-	background: #82b822;
+	background: #6dcaf3;
 	-webkit-transition: all 300ms ease-in-out;
     -moz-transition: all 300ms ease-in-out;
     -o-transition: all 300ms ease-in-out;
@@ -562,7 +548,7 @@ body .sf-s-holder a:hover
 
 .sf-hide
 {
-	display: none;
+	display: none !important;
 }
 
 .sf-hide-opacity
