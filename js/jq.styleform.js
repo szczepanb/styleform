@@ -1187,7 +1187,8 @@ $.widget("SuperForm.superRadio", {
 		hover:false,
 		wrapClass: null,
 		wrapTitle: null,
-		ignoredClass:null,
+		ignoredClass: 'sf-r-ignored',
+		errorClass: 'error',
 		//calbacks
 		onEnter:null,
 		onLeave:null,
@@ -1206,117 +1207,53 @@ $.widget("SuperForm.superRadio", {
 		var $input = $this.element;
 		
 		if($input.attr('type') !== 'radio' || $input.hasClass($this.options.ignoredClass))
+		{
 			return false;
+		}
 		
 		$this._renderRadio();
 		$this._initAtributes();
 		$this._initEvents();
+		$this._initObserver();
+		$this._update();
 
 		$this._trigger( "onCreate", null, $input);
     },
 	
-    _initEvents: function()
+    
+    _renderRadio: function()
     {
     	var $this = this;
 		var $input = $this.element;
-    	
-		$input.closest('.sf-r-wrapper').find('label').off('click.i_radio').on('click.i_radio', function(event)
+		
+		if(!$input.hasClass('sf-r-styled'))
 		{
-			if(!$input.is(':disabled'))
+			if($input.parent('label').length)
 			{
-				$this._trigger( "onClick", event, $input);
-				if(!$input.is(':checked'))
+				$this.vars.old = 'inner';
+				$input.parent().wrap('<div class="sf-r-wrapper">');
+			}
+			else if(typeof($input.attr('id')) !== 'undefined')
+			{
+				var element = $('label[for="'+$input.attr('id')+'"]');
+				if(element)
 				{
-					$('input[name="'+$input.attr('name')+'"]').each(function()
-					{
-						$(this).closest('.sf-r-wrapper').find('a.sf-r-default').removeClass('sf-r-clicked');;
-					});
-					
-					$input.prop('checked', true);
-					$input.change();
-					if($input.closest('form').length && $.isFunction($input.valid))
-					{
-						var validator = $.data($input.closest('form')[0], "validator" );
-						if(validator && Object.keys(validator.submitted).length > 0)
-						{
-							$input.valid();
-							if($input.hasClass(validator.settings.errorClass))
-								$input.closest('.sf-r-wrapper').addClass(validator.settings.errorClass);
-							else
-								$input.closest('.sf-r-wrapper').removeClass(validator.settings.errorClass);
-						}
-					}
-					
-					$this._trigger( "onChange", null, $input);
+					$this.vars.old = 'outside';
+					element.addClass('sf-hide');
+					$input.wrap('<label>').parent().append(element.html()).wrap('<div class="sf-r-wrapper">');
 				}
 			}
-			return false;
-		});
-		
-		$input.off('change.sf-radio').on('change.sf-radio', function(){
-			if(!$input.is(':disabled'))
+			else
 			{
-				if($(this).is(':checked') && !$(this).closest('.sf-r-wrapper').find('a.sf-r-default').hasClass('sf-r-clicked'))
-				{
-					$('input[name="'+$(this).attr('name')+'"]').each(function()
-					{
-						$(this).closest('.sf-r-wrapper').removeClass('sf-r-clicked');
-					});
-					$(this).closest('.sf-r-wrapper').addClass('sf-r-clicked');
-				}
-				else if(!$(this).is(':checked') && $(this).closest('.sf-r-wrapper').find('a.sf-r-default').hasClass('sf-r-clicked'))
-				{
-					$('input[name="'+$(this).attr('name')+'"]').each(function()
-					{
-						$(this).closest('.sf-r-wrapper').removeClass('sf-r-clicked');;
-					});
-					$(this).closest('.sf-r-wrapper').removeClass('sf-r-clicked');
-				}
-			}
-		});
-		
-		$input.closest('.sf-r-wrapper').find('label a').not('.sf-r-default').off('click').on('click', function(e)
-		{
-			if(!$input.is(':disabled'))
-			{
-				if($(this).attr('target') == '_blank')
-                    window.open($(this).attr('href'));
-                else
-                    window.location.href = $(this).attr('href');
+				$this.vars.old = 'empty'
+				$input.wrap('<div class="sf-r-wrapper"><label class="sf-r-only-radio">');
 			}
 			
-            e.preventDefault();
-			e.stopPropagation();
-		});
-		
-		$input.closest('.sf-r-wrapper').off('click.i_radio').on('click.i_radio', function(){
-			if(!$input.is(':disabled'))
-			{
-				$input.closest('.sf-r-wrapper').find('label').click();
-			}
+			if(typeof($input.attr('style')) != 'undefined')
+				$input.closest('.sf-r-wrapper').attr('style', $input.attr('style'));
 			
-			return false;
-		});
-		
-		if($input.data().hover === true || $this.options.hover)
-		{
-			$input.closest('.sf-r-wrapper').off('mouseenter.i_radio').on('mouseenter.i_radio', function(event)
-			{
-				if(!$input.is(':disabled'))
-				{
-					$(this).addClass('sf-r-hover');
-					$this._trigger( "onEnter", event, $input);
-				}
-			});
-
-			$input.closest('.sf-r-wrapper').off('mouseleave.i_radio').on('mouseleave.i_radio', function(event)
-			{
-				if(!$input.is(':disabled'))
-				{
-					$(this).removeClass('sf-r-hover');
-					$this._trigger( "onLeave", event, $input);
-				}
-			});
+			$input.closest('.sf-r-wrapper label').prepend('<span tabindex="0" class="sf-r-default"><span></span></span>');
+			$input.addClass('sf-r-styled sf-hide');
 		}
     },
     
@@ -1357,54 +1294,150 @@ $.widget("SuperForm.superRadio", {
 		}
     },
     
-    _renderRadio: function()
+    _initEvents: function()
     {
     	var $this = this;
 		var $input = $this.element;
 		
-		if(!$input.hasClass('sf-r-styled'))
-		{
-			if($input.parent().is('label'))
+		$input.off('change.sf-radio').on('change.sf-radio', function(){
+			if($input.prop('disabled') !== true)
 			{
-				$this.vars.old = 'inner';
-				$input.parent().wrap('<div class="sf-r-wrapper">');
+				$this._trigger( "onClick", null, $input);
+				$this._change();
+				$this._trigger( "onChange", null, $input);
 			}
-			else if(typeof($input.attr('id')) !== 'undefined')
+		});
+		
+		$input.closest('label').find('.sf-r-default').off('keydown.sf_radio').on('keydown.sf_radio', function(event)
+		{
+			if(this === document.activeElement)
 			{
-				var element = $('label[for="'+$input.attr('id')+'"]');
-				if(element)
-				{
-					$this.vars.old = 'outside';
-					element.addClass('sf-hide');
-					$input.wrap('<label>').parent().append(element.html()).wrap('<div class="sf-r-wrapper">');
+				switch ( event.keyCode ) {
+				case 32:	
+				
+						$(this).closest('label').click();
+						return false;
+						break;
+				case 13:	
+					if($(this).closest('form').length)
+						$(this).closest('form').submit();
+					return false;
+					break;
+				default: break;
 				}
 			}
-			else
+		});
+		
+		$input.closest('label').find('a').off('click.sf_radio').on('click.sf_radio', function(e)
+		{
+			if($input.prop('disabled') !== true)
 			{
-				$this.vars.old = 'empty'
-				$input.wrap('<div class="sf-r-wrapper"><label class="sf-r-only-radio">');
+				if($(this).attr('target') == '_blank')
+                    window.open($(this).attr('href'));
+                else
+                    window.location.href = $(this).attr('href');
 			}
 			
-			$input.attr('tabindex', '-1');
-						
-			if(typeof($input.attr('style')) != 'undefined')
-				$input.closest('.sf-r-wrapper').attr('style', $input.attr('style'));
-			
-			$input.closest('.sf-r-wrapper label').prepend('<a href="javascript:void(0)" class="sf-r-default">');
-			$input.closest('.sf-r-wrapper').find('a.sf-r-default').append('<span>');
-			$input.addClass('sf-r-styled sf-hide');
-		}
-
-		if($input.is(':checked'))
-			$input.closest('.sf-r-wrapper').addClass('sf-r-clicked');
+            e.preventDefault();
+			e.stopPropagation();
+		});
 		
-		if($input.is(':disabled'))
-			$input.closest('.sf-r-wrapper').addClass('sf-r-disabled');
+		if($input.data().hover === true || $this.options.hover)
+		{
+			$input.closest('.sf-r-wrapper').off('mouseenter.i_radio').on('mouseenter.sf_radio', function(event)
+			{
+				if($input.prop('disabled') != true)
+				{
+					$(this).addClass('sf-r-hover');
+					$this._trigger( "onEnter", event, $input);
+				}
+			});
+
+			$input.closest('.sf-r-wrapper').off('mouseleave.i_radio').on('mouseleave.sf_radio', function(event)
+			{
+				if($input.prop('disabled') != true)
+				{
+					$(this).removeClass('sf-r-hover');
+					$this._trigger( "onLeave", event, $input);
+				}
+			});
+		}
     },
+    
+    _initObserver: function()
+    {
+    	var $this = this;
+		var $input = $this.element;
+    	
+    	callback = function(mutationList, observer)
+    	{
+    		$this._update();
+    	};
+    	
+    	var observerOptions = {
+		  childList: true,
+		  attributes: true,
+		  subtree: true
+		}
+    	
+    	$this.vars.observer = new MutationObserver(callback);
+    	$this.vars.observer.observe($this.element[0], observerOptions);
+    },
+    
+    _update: function()
+	{
+		var $this = this;
+		var $input = $this.element;
+		
+		$this._initAtributes();
+		
+		if($input.prop('disabled') == true)
+		{
+			$input.closest('.sf-r-wrapper').addClass('sf-r-disabled').find('.sf-r-default').prop("tabindex", "-1");
+			
+		}
+		else
+		{
+			$input.closest('.sf-r-wrapper').removeClass('sf-r-disabled').find('.sf-r-default').prop("tabindex", "0");
+		}
+		
+		$this._change();
+		
+		if($input.hasClass($this.options.errorClass))
+		{
+			$input.closest('.sf-r-wrapper').addClass($this.options.errorClass);
+		}
+		else
+		{
+			$input.closest('.sf-r-wrapper').removeClass($this.options.errorClass);
+		}
+	},
+	
+	_change: function()
+	{
+		var $this = this;
+		var $input = $this.element;
+		
+		if($input.prop('checked') == true)
+		{
+			$('input.sf-ri-clicked[name="'+$input.attr('name')+'"]').closest('.sf-r-wrapper').removeClass('sf-r-clicked')
+			$input.addClass('sf-ri-clicked').closest('.sf-r-wrapper').addClass('sf-r-clicked');
+		}
+		else
+		{
+			$input.removeClass('sf-ri-clicked').closest('.sf-r-wrapper').removeClass('sf-r-clicked');
+		}
+	},
+	
+	update: function()
+	{
+		this._update();
+	},
     
 	_destroy:function()
 	{
 		this.element.removeClass('sf-r-styled');
+		this.element.removeData(this.widgetFullName);
 		this.element.closest('.sf-r-wrapper').replaceWith(this.element);
 	},
 	destroy:function(){this._destroy();},
@@ -1425,7 +1458,8 @@ $.widget("SuperForm.superCheckbox", {
 		hover:false,
 		wrapClass: true,
 		wrapTitle: true,
-		ignoredClass:"sf-ch-ignored",
+		ignoredClass: "sf-ch-ignored",
+		errorClass: "error",
 		//calbacks
 		onEnter:null,
 		onLeave:null,
@@ -1486,20 +1520,14 @@ $.widget("SuperForm.superCheckbox", {
 				$input.wrap('<div class="sf-ch-wrapper"><label class="sf-ch-only-checkbox">');
 			}
 			
-			$input.attr('tabindex', '-1');
+			$input;
 			
 			if(typeof($input.attr('style')) != 'undefined')
 				$input.closest('.sf-ch-wrapper').attr('style', $input.attr('style'));
 			
-			$input.closest('.sf-ch-wrapper label').prepend('<a href="javascript:void(0)" class="sf-ch-default">');
-			$input.closest('.sf-ch-wrapper').find('a.sf-ch-default').append('<span>');
+			$input.closest('.sf-ch-wrapper label').prepend('<span tabindex="0" class="sf-ch-default">');
+			$input.closest('.sf-ch-wrapper').find('.sf-ch-default').append('<span>');
 			$input.addClass('sf-ch-styled sf-hide');
-			
-			if($input.is(':checked'))
-				$input.closest('.sf-ch-wrapper').addClass('sf-ch-clicked');
-			
-			if($input.is(':disabled'))
-				$input.closest('.sf-ch-wrapper').addClass('sf-ch-disabled');
 		}
     },
     
@@ -1544,57 +1572,19 @@ $.widget("SuperForm.superCheckbox", {
     {
     	var $this = this;
 		var $input = $this.element;
-    	
-    	$input.closest('.sf-ch-wrapper').find('label').off('click.i_checkbox').on('click.i_checkbox', function(event)
-		{
-			if(!$input.is(':disabled'))
-			{
-				$this._trigger( "onClick", event, $input);
-				if($input.is(':checked'))
-				{
-					$input.prop('checked', false);
-				}
-				else
-				{
-					$input.prop('checked', true);
-				}
-
-				$input.closest('.sf-ch-wrapper').toggleClass('sf-ch-clicked');
-				$input.triggerHandler("click");
-				$input.change();
-				if($input.closest('form').length && $.isFunction($input.valid)
-					&& typeof($input.attr('name')) !== 'undefined')
-				{
-					var validator = $.data($input.closest('form')[0], "validator" );
-					if(validator && Object.keys(validator.submitted).length > 0)
-					{
-						$input.valid();
-
-						if($input.hasClass(validator.settings.errorClass))
-							$input.closest('.sf-ch-wrapper').addClass(validator.settings.errorClass);
-						else
-							$input.closest('.sf-ch-wrapper').removeClass(validator.settings.errorClass);
-					}
-				}
-
-				$this._trigger( "onChange", null, $input);
-			}
-			return false;
-		});
 
 		$input.off('change.sf-checkbox').on('change.sf-checkbox', function(){
-			if(!$input.is(':disabled'))
+			if($input.prop('disabled') !== true)
 			{
-				if($input.is(':checked') && !$input.closest('.sf-ch-wrapper').hasClass('sf-ch-clicked'))
-					$input.closest('.sf-ch-wrapper').addClass('sf-ch-clicked');
-				else if(!$input.is(':checked') && $input.closest('.sf-ch-wrapper').hasClass('sf-ch-clicked'))
-					$input.closest('.sf-ch-wrapper').removeClass('sf-ch-clicked');
+				$this._trigger( "onClick", null, $input);
+				$this._change();
+				$this._trigger( "onChange", null, $input);
 			}
 		});
 
-		$input.closest('.sf-ch-wrapper').find('label a').not('.sf-ch-default').off('click').on('click', function(e)
+		$input.closest('.label').find('a').off('click.sf_anchors_checkbox').on('click.sf_anchors_checkbox', function(e)
 		{
-			if(!$input.is(':disabled'))
+			if(!$input.prop('disabled') !== true)
 			{
 				if($(this).attr('target') == '_blank')
 					window.open($(this).attr('href'));
@@ -1606,20 +1596,39 @@ $.widget("SuperForm.superCheckbox", {
 			e.stopPropagation();
 		});
 		
+		$input.closest('label').find('.sf-ch-default').off('keydown.sf_radio').on('keydown.sf_radio', function(event)
+		{
+			if(this === document.activeElement)
+			{
+				switch ( event.keyCode ) {
+				case 32:	
+						$(this).closest('label').click();
+						event.preventDefault();
+						break;
+				case 13:	
+					if($(this).closest('form').length)
+						$(this).closest('form').submit();
+					return false;
+					break;
+				default: break;
+				}
+			}
+		});
+		
 		if($input.data().hover === true || $this.options.hover)
 		{
-			$input.closest('.sf-ch-wrapper').off('mouseenter.i_checkbox').on('mouseenter.i_checkbox', function(event)
+			$input.closest('.sf-ch-wrapper').off('mouseenter.sf_checkbox').on('mouseenter.sf_checkbox', function(event)
 			{
-				if(!$input.is(':disabled'))
+				if($input.prop('disabled') !== true)
 				{
 					$(this).addClass('sf-ch-hover');
 					$this._trigger( "onEnter", event, $input);
 				}
 			});
 
-			$input.closest('.sf-ch-wrapper').off('mouseleave.i_checkbox').on('mouseleave.i_checkbox', function(event)
+			$input.closest('.sf-ch-wrapper').off('mouseleave.sf_checkbox').on('mouseleave.sf_checkbox', function(event)
 			{
-				if(!$input.is(':disabled'))
+				if($input.prop('disabled') !== true)
 				{
 					$(this).removeClass('sf-ch-hover');
 					$this._trigger( "onLeave", event, $input);
@@ -1655,7 +1664,7 @@ $.widget("SuperForm.superCheckbox", {
 		
 		$this._initAtributes();
 		
-		if($input.is(':disabled'))
+		if($input.prop('disabled') === true)
 		{
 			$input.closest('.sf-ch-wrapper').addClass('sf-ch-disabled');
 		}
@@ -1664,14 +1673,32 @@ $.widget("SuperForm.superCheckbox", {
 			$input.closest('.sf-ch-wrapper').removeClass('sf-ch-disabled');
 		}
 		
-		if($input.is(':checked'))
+		$this._change();
+
+		if($input.hasClass($this.options.errorClass))
 		{
-			$input.closest('.sf-ch-wrapper').addClass('sf-ch-clicked');
+			$input.closest('.sf-ch-wrapper').addClass($this.options.errorClass);
 		}
 		else
 		{
-			$input.closest('.sf-ch-wrapper').removeClass('sf-ch-clicked');
+			$input.closest('.sf-ch-wrapper').removeClass($this.options.errorClass);
 		}
+	},
+	
+	_change: function()
+	{
+		var $this = this;
+		var $input = $this.element;
+		
+		if($input.prop('checked') === true)
+		{
+			$input.addClass('sf-ich-clicked').closest('.sf-ch-wrapper').addClass('sf-ch-clicked');
+		}
+		else
+		{
+			$input.removeClass('sf-ich-clicked').closest('.sf-ch-wrapper').removeClass('sf-ch-clicked');
+		}
+		
 	},
 	
 	update: function()
@@ -1685,9 +1712,8 @@ $.widget("SuperForm.superCheckbox", {
 			this.vars.observer.disconnect();
 		
 		this.element.removeClass('sf-ch-styled sf-hide');
-		this.element.removeData('SuperFormSuperCheckbox');
+		this.element.removeData(this.widgetFullName);
 		
-		console.log(this.vars.old);
 		switch (this.vars.old) {
 			case 'inner':
 				old = this.element.closest('label').off('click.i_checkbox');
