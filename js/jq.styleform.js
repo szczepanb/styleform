@@ -192,7 +192,7 @@ $.widget( "SuperForm.superform", {
 });
 
 var interval = null;
-$.widget("SuperForm.selectStyle", {
+$.widget("SuperForm.superSelect", {
 	options: {
 		hover:false,
 		search: false,
@@ -210,7 +210,7 @@ $.widget("SuperForm.selectStyle", {
 		wrapClass: null,
 		inputClass: null,
 		wrapTitle: null,
-		ignoredClass:null,
+		ignoredClass: 'sf-s-ignore',
 		minWidth: true,
 		maxListElement: null,
 		absolute: false,

@@ -3,6 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Superform</title>
+	<link rel="manifest" href="manifest.json">
 	<link href="https://fonts.googleapis.com/css?family=Poppins:300,300i,400,400i,500,500i,600,600i,700,700i,800,800i&amp;subset=devanagari,latin-ext" rel="stylesheet">
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	<link href="css/jq.ui.css" rel="stylesheet" type="text/css" media="all">
@@ -60,6 +61,43 @@
 			<input id="r_test_2" type="radio" name="r_test_1"><label for="r_test_2">Sport</label>
 			<label><input type="radio" title="New title" name="r_test_1">Movies</label>
 			<input type="radio" title="New title" name="r_test_1">
+			<br/>
+			<br/>
+			<div id="includedContent">
+				
+			</div>
+		</div>
+	</section>
+	<section class="styleform width-content">
+		<h2>Selects</h2>
+		<div>
+			<select class="sf-s-ignore" name="s_test">
+				<option value="1">One</option>
+				<option value="2">Two</option>
+				<option value="3">Three</option>
+			</select>
+			<br/>
+			<br/>
+			<select name="s_test">
+				<option value="1">One</option>
+				<option value="2">Two</option>
+				<option value="3">Three</option>
+			</select>
+			<select disabled name="s_test">
+				<option value="1">One</option>
+				<option value="2">Two</option>
+				<option value="3">Three</option>
+			</select>
+			<select name="s_test">
+				<option disabled value="1">One</option>
+				<option value="2">Two</option>
+				<option value="3">Three</option>
+			</select>
+			<select name="s_test">
+				<option value="1">One</option>
+				<option selected value="2">Two</option>
+				<option value="3">Three</option>
+			</select>
 			<br/>
 			<br/>
 			<div id="includedContent">
