@@ -1,6 +1,13 @@
 {
   "short_name": "Maps",
   "name": "Google Maps",
+  "icons": [
+    {
+      "src": "/gfx/manifest.png",
+      "type": "image/png",
+      "sizes": "144x144"
+    },
+  ],
   "start_url": "/",
   "background_color": "#3367D6",
   "display": "standalone",
