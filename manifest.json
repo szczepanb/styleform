@@ -6,7 +6,7 @@
       "src": "/gfx/manifest.png",
       "type": "image/png",
       "sizes": "144x144"
-    },
+    }
   ],
   "start_url": "/",
   "background_color": "#3367D6",
