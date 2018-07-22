@@ -1,4 +1,3 @@
-// Files to cache
 var cacheName = 'superForm';
 var appShellFiles = [
   'css/jq.ui.css/',
@@ -13,7 +12,6 @@ var appShellFiles = [
   'gfx/logo.png'
 ];
 
-// Installing Service Worker
 self.addEventListener('install', function(e) {
   console.log('[Service Worker] Install');
   e.waitUntil(
@@ -24,7 +22,6 @@ self.addEventListener('install', function(e) {
   );
 });
 
-// Fetching content using Service Worker
 self.addEventListener('fetch', function(e) {
   e.respondWith(
     caches.match(e.request).then(function(r) {
