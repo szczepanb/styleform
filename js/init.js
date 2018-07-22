@@ -1,3 +1,8 @@
+// Registering Service Worker
+if('serviceWorker' in navigator) {
+	navigator.serviceWorker.register('js/sw.js');
+};
+
 $(function()
 {
 	$(".sf-form").validate(
