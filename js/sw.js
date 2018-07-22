@@ -1,13 +1,13 @@
 var cacheName = 'superForm';
 var appShellFiles = [
-  '/css/jq.ui.css/',
-  '/css/main.css/',
-  '/css/plugin.css/',
+  '/css/jq.ui.css',
+  '/css/main.css',
+  '/css/plugin.css',
   '/js/jq.js',
   '/js/jq.styleform.js',
   '/js/jq.ui.js',
   '/js/jq.validate.js',
-  '/js/additional+methods.js',
+  '/js/additional-methods.js',
   '/index.html',
   '/gfx/logo.png'
 ];
