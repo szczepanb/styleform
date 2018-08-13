@@ -200,9 +200,9 @@ $.widget("SuperForm.superSelect", {
 		{
 			placeholders:
 			{
-				search: "Wyszukaj"
+				search: "Search"
 			},
-			no_results: "Brak wyników."
+			no_results: "No results."
 		},
 		initFrom: 11,
 		onlyClass: null,
@@ -224,179 +224,45 @@ $.widget("SuperForm.superSelect", {
 	},
 	
     _create: function() {
+    	this.vars = 
+    	{
+			wrapper: null,
+    		menu: null,
+    		menuUlWrap: null,
+    		menuUl: null
+    	}
+    	
 		var $this = this;
-		$this.element.old = $this.element.clone();
-		$this.element.addClass('sf-s-initialized');
-		
 		var $select = $this.element;
-		
-		if($select.hasClass('sf-s-styled'))
-		{
-			if($this.element.find('option').length !== $this.element.old.find('option').length && $this.element.old)
-			{
-				$this._refresh();
-			}
-		}
 
-		if(!$select.is('select') || $select.hasClass($this.options.ignoredClass) || $select.hasClass('sf-s-styled'))
+		if(!$select.prop('tagName') == 'select' || $select.hasClass($this.options.ignoredClass) || $select.hasClass('sf-s-styled'))
 		{
-			$this.destroy();
 			return false;
 		}
 		
-		if(typeof($this.options.onlyClass) != 'undefined')
-		{	
-			if($this.options.onlyClass !=  null)
-			{
-				if(!$select.hasClass($this.options.onlyClass))
-				{
-					$this._destroy();
-					return false;
-				}
-			}
-		}
-			
-		if(!$select.hasClass('sf-s-styled'))
-		{
-			this._renderMenu();
-			this._renderItem();
-			
-			$select.addClass('sf-s-styled sf-hide');
-		}
+		$this._renderSelect();
+		$this._initAtributes();
+		$this._renderMenu();
+		$this._initEvents();
+		$this._setMinWidth();
+		$this._initObserver();
+		$this._update();
 		
 		$this._trigger( "onCreate", null, $select);
-		$this._setUpList();
-		if($select.is(':disabled'))
+		
+		if($select.prop('disabled'))
 		{
 			$select.closest('.sf-s-wrapper').addClass('sf-s-disabled');
 		}
 		else	
 		{
-			if($this.options.isClickable)
-			{
-				$select.closest('.sf-s-wrapper').find('p.sf-s-holder').addClass('sf-s-click-able');
-				$select.closest('.sf-s-wrapper').find('p.sf-s-holder').off('click.i_select').on('click.i_select',function(event)
-				{
-					if($select.hasClass('sf-s-list-is-open'))
-						$this._close();
-					else
-						$this._open();
-					
-					event.stopPropagation();
-					return false;
-				});
-				
-				$select.closest('.sf-s-wrapper').find('p.sf-s-holder .sf-s-button').off('click.i_select').on('click.i_select',function(event)
-				{
-					$(this).parent('p.sf-s-holder').click();
-					event.stopPropagation();
-					return false;
-				});
-			}
-			else
-			{
-				$select.closest('.sf-s-wrapper').find('p.sf-s-holder .sf-s-button').off('click.i_select').on('click.i_select',function(event)
-				{	
-					if($select.hasClass('sf-s-list-is-open'))
-						$this._close();
-					else
-						$this._open();
-					
-					event.stopPropagation();
-					return false;
-				});
-			}
-
-			if($this.options.hover)
-			{
-				if($this.options.isClickable === true)
-				{
-					$select.closest('.sf-s-wrapper').find('p.sf-s-holder').off('mouseenter.i_select').on('mouseenter.i_select', function(event)
-					{
-						$(this).addClass('sf-s-hover');
-						$this._trigger( "onEnter", event, $select);
-					});
-
-					$select.closest('.sf-s-wrapper').find('p.sf-s-holder').off('mouseleave.i_select').on('mouseleave.i_select', function(event)
-					{
-						$(this).removeClass('sf-s-hover');
-						$this._trigger( "onLeave", event, $select);
-					});
-				}
-				else
-				{
-					$select.closest('.sf-s-wrapper').find('p.sf-s-holder .sf-s-button').off('mouseenter.i_select').on('mouseenter.i_select', function(event)
-					{
-						$(this).addClass('sf-s-hover');
-						$this._trigger( "onEnter", event, $select);
-					});
-
-					$select.closest('.sf-s-wrapper').find('p.sf-s-holder .sf-s-button').off('mouseleave.i_select').on('mouseleave.i_select', function(event)
-					{
-						$(this).removeClass('sf-s-hover');
-						$this._trigger( "onLeave", event, $select);
-					});
-				}
-			}
-			
+						
 			if($this.options.absolute)
 				var $listWraper = $('#sf-s-list-'+$this.uuid);
 			else
 				$listWraper = $select.closest('.sf-s-wrapper');
 			
-			$listWraper.find('ul.sf-s-list-inner li.sf-s-default').each(function()
-			{
-				$(this).not('.sf-s-option-disabled').off('mouseenter.i_select').on('mouseenter.i_select', function()
-				{
-					$listWraper.find('ul.sf-s-list-inner li.sf-s-default').removeClass('sf-s-hover');
-					$(this).addClass('sf-s-hover');
-				});
-
-//				$(this).not('.sf-s-option-disabled').off('mouseleave.i_select').on('mouseleave.i_select', function()
-//				{
-//					$(this).removeClass('sf-s-hover');
-//				});
-
-				$(this).off('click.i_select').on('click.i_select', function(event)
-				{
-					if($(this).hasClass('sf-s-active'))
-					{
-						$this._close();
-					}
-					else if($(this).hasClass('sf-s-option-disabled'))
-					{
-						event.preventDefault();
-						event.stopPropagation();
-					}
-					else
-					{
-						var clone = $(this).clone();
-						clone.find('input[disabled]').remove();
-						$this._close();
-						$listWraper.find('ul.sf-s-list-inner li.sf-s-active').removeClass('sf-s-active');
-						$select.closest('.sf-s-wrapper').find('p.sf-s-holder a').html($.trim(clone.html().replace(/&nbsp;/g,'')));
-						$(this).addClass('sf-s-active');
-						$select.val($(this).find('input').val()).change();
-						if(typeof($select.closest('form')) != 'undefined' && $.isFunction($select.valid))
-						{
-							var validator = $.data($select.closest('form')[0], "validator" );
-							if(validator && Object.keys(validator.submitted).length > 0)
-							{
-								$select.valid();
-								if($select.hasClass(validator.settings.errorClass))
-									$select.closest('.sf-s-wrapper').addClass(validator.settings.errorClass);
-								else
-									$select.closest('.sf-s-wrapper').removeClass(validator.settings.errorClass);
-							}
-						}
-						$this._trigger( "onChange", null, $select);
-					}
-					$this._trigger( "onSelect", event, $select);
-				});
-			});
-			
-			this._addKeyboardEvent();
-			
+						
 			if($this.options.search && !($this.element.find('option').length < $this.options.initFrom))
         			this._initSearch();
 			
@@ -420,25 +286,444 @@ $.widget("SuperForm.superSelect", {
     },
 	create:function(){this._create();},
 	
+	_renderSelect: function()
+	{
+		var $this = this;
+		var $select = $this.element;
+		
+		$select.addClass('sf-hide').wrap('<div class="sf-s-wrapper">');
+		$this.vars.wrapper = $select.closest('.sf-s-wrapper'); 
+		
+		if($select.prop('multiple') == true)
+		{
+			selected = $select.find('option:selected');
+			
+			$this.vars.wrapper.append('<div class="sf-s-multi-holder">').find('div.sf-s-multi-holder');
+		}
+		else
+		{
+			selected = $select.find('option:selected');
+			html = selected.html();
+			if(selected.data('icon'))
+				html = selected.data('icon')+html;
+			
+			$this.vars.wrapper.append('<p class="sf-s-holder">').find('p.sf-s-holder')
+				.append('<span class="sf-s-selected"></span><span class="sf-s-button"></span>').find('.sf-s-selected').html($.trim(html.replace(/&nbsp;/g,'')));
+		}
+	},
+	
+	_renderMenu:function()
+	{
+		var $this = this;
+		$this.element = this.element;
+		
+		$this.vars.menu = $('<div id="sf-s-list-'+$this.uuid+'" class="sf-s-list-wrap-absolute"><div class="sf-s-list sf-hide-opacity"><ul class="sf-s-list-inner scrollbar-formated-default"></ul></div></div>').appendTo($('body'));
+		$this.vars.menuUlWrap = $this.vars.menu.find('.sf-s-list');
+		$this.vars.menuUl = $this.vars.menu.find('ul.sf-s-list-inner');
+		
+		$this.element.children('option, optgroup').each(function(iteration, element)
+		{
+			var $thisO = $(this);
+			if($thisO.prop('tagName') == 'OPTION')
+			{
+				var is_selected = '', is_disabled = '';
+				
+				var html = $(this).html();
+				if($thisO.data().icon)
+					html = $thisO.data().icon+html;
+				
+				if($thisO.prop('selected') == true)
+				{
+					is_selected = ' sf-s-active sf-s-hover';
+					$this.vars.wrapper.find('p.sf-s-holder .sf-s-selected').html($.trim(html.replace(/&nbsp;/g,'')));
+				}
+				
+				if($thisO.prop('disabled'))
+				{
+					is_disabled = ' sf-s-option-disabled';
+				}
+				
+				var optionAdded = $('<li class="sf-s-default'+is_selected+is_disabled+'" data-value="'+$thisO.val()+'">'+html+'</li>').appendTo($this.vars.menuUl);
+				if(typeof($thisO.attr('class')) != 'undefined')
+				{
+					optionAdded.addClass($thisO.attr('class'));
+				}
+				optionAdded = null;
+			}
+			else
+			{
+				var $wrap = $('<li class="sf-s-optgroup" data-index="'+$thisO.index()+'"><ul class="sf-s-optgroup-list"></ul></li>');
+				if($thisO.attr('label').length > 0)
+				{
+					$groupDisabled = $thisO.prop('disabled');
+					
+					if($groupDisabled == true)
+					{
+						is_disabled = ' sf-s-opt-group-disabled';
+					}
+					
+					$wrap.addClass(is_disabled).find('ul').append('<li><p class="sf-s-optgroup-label">'+$thisO.attr('label')+'</p></li>');
+				}
+					
+
+				$thisO.find('option').each(function()
+				{
+					var $thisOI = $(this);
+					var is_selected = '', is_disabled = '';
+					var html = $thisOI.html();
+					if($thisOI.data().icon)
+						html = $thisOI.data().icon+html;
+					
+					if($thisOI.prop('selected') == true)
+					{
+						is_selected = ' sf-s-active sf-s-hover';
+						$this.element.closest('.sf-s-wrapper').find('p.sf-s-holder .sf-s-selected').html($.trim(html.replace(/&nbsp;/g,'')));
+					}
+					
+					if($thisOI.prop('disabled') == true || $thisO.prop('disabled') == true)
+					{
+						is_disabled = ' sf-s-option-disabled';
+					}
+					
+					var optionAdded = $('<li class="sf-s-default'+is_selected+is_disabled+'" data-value="'+$thisOI.val()+'">'+html+'</li>').appendTo($wrap.find('ul.sf-s-optgroup-list'));
+					if(typeof($thisOI.attr('class')) != 'undefined')
+					{
+						optionAdded.addClass($thisOI.attr('class'));
+					}
+					optionAdded = null;
+				});
+
+				$this.vars.menuUl.append($wrap);
+			}
+		});
+	},
+	
+	_initAtributes:function()
+	{
+		var $this = this;
+		var $select = $this.element;
+		
+		var $class = '';
+		//Add class to wrap
+		if($.type($this.options.wrapClass) === "boolean")
+		{
+			if($this.options.wrapClass === true)
+			{
+				var classList = $select.attr('class').split(/\s+/);
+				$.each(classList, function(index, item) {
+					$this.vars.wrapper.addClass('sf-s-class-'+item);
+				});
+			}
+		}
+		else if($.type($this.options.wrapClass) === "string")	
+			$class = $this.options.wrapClass;
+		else if($.type($this.options.wrapClass) === "null"){}
+		else
+			console.exception('Wrong value for wrapClass is have to be string.');
+		
+		//Add title to wrap or set from input
+		if($.type($this.options.wrapTitle) === "boolean")
+		{
+			if($this.options.wrapTitle === true)
+				$this.vars.wrapper.attr('title', $select.attr('title'));
+		}
+		else if($.type($this.options.wrapTitle) === "string")
+		{
+			$this.vars.wrapper.attr('title', $this.options.wrapTitle);
+		}
+		else if($.type($this.options.wrapTitle) === "null"){}
+		else
+		{
+			console.exception('Wrong value for wrapTitle check documentation at www.agendo.pl');
+		}
+	},
+	
+	_initEvents: function()
+	{
+		var $this = this;
+		var $select = $this.element;
+		
+		if($select.prop('disabled') != true)
+		{
+			$this.vars.wrapper.find('p.sf-s-holder,div.sf-s-multi-holder').off('click.sf_select').on('click.sf_select',function(event)
+			{
+				if($select.hasClass('sf-s-list-is-open'))
+					$this._close();
+				else
+					$this._open();
+				
+				event.stopPropagation();
+				return false;
+			});
+			
+			$this.vars.menuUl.find('.sf-s-default').each(function()
+			{
+				$(this).off('mouseenter.sf_select').on('mouseenter.sf_select', function()
+				{
+					if($(this).hasClass('sf-s-option-disabled'))
+						return false;
+					
+					$this.vars.menuUl.find('li.sf-s-default.sf-s-hover').removeClass('sf-s-hover');
+					$(this).addClass('sf-s-hover');
+				})
+				.off('mouseleave.sf_select').on('mouseleave.sf_select', function(event)
+				{
+					$(this).removeClass('sf-s-hover');
+				});
+
+
+				$(this).off('click.sf_select').on('click.sf_select', function(event)
+				{
+					
+					if($(this).hasClass('sf-s-option-disabled'))
+					{
+						event.preventDefault();
+						event.stopPropagation();
+						return false;
+					}
+					else
+					{	
+						if($this._isMultiple())
+						{
+							var option = $select.find('option[value="'+$(this).data('value')+'"]');
+							if(option.prop('selected') == false)
+								option.prop('selected', true);
+							else
+								option.prop('selected', false);
+							
+						}
+						else
+						{
+							if($(this).hasClass('sf-s-active'))
+							{
+								$this._close();
+								return;
+							}
+							
+							$select.find('option[value="'+$(this).data('value')+'"]').prop('selected', true);
+						}
+						
+						$this._change();
+						$this._close();
+						$select.trigger('change');
+						$this._trigger( "onChange", null, $select);
+					}
+					$this._trigger( "onSelect", event, $select);
+					event.stopPropagation();
+					return false;
+				});
+			});
+					
+			this._addKeyboardEvent();
+
+			
+			if($this.options.hover)
+			{
+				$this.vars.wrapper.find('p.sf-s-holder').off('mouseenter.sf_select').on('mouseenter.sf_select', function(event)
+				{
+					if($select.prop('disabled') == true)
+						return false;
+					
+					$(this).addClass('sf-s-hover');
+					$this._trigger( "onEnter", event, $select);
+				})
+				.off('mouseleave.sf_select').on('mouseleave.sf_select', function(event)
+				{
+					$(this).removeClass('sf-s-hover');
+					$this._trigger( "onLeave", event, $select);
+				});
+			}
+		}
+	},
+	
+	_initObserver: function()
+    {
+    	var $this = this;
+		var $select = $this.element;
+    	
+    	callback = function(mutationList, observer)
+    	{
+    		if(['multiple', 'value'].indexOf(mutationList[0]['attributeName']) > -1 || mutationList[0]['type'] == 'childList')
+    		{
+    			$this._destroy();
+    			$this.element.superSelect($this.options);
+    		}
+    		
+    		$this._update();
+    	};
+    	
+    	var observerOptions = {
+		  childList: true,
+		  attributes: true,
+		  subtree: true
+		}
+    	
+    	$this.vars.observer = new MutationObserver(callback);
+    	$this.vars.observer.observe($this.element[0], observerOptions);
+    },
+	
+	_update: function()
+	{
+		var $this = this;
+		var $select = $this.element;
+		
+		$this._initAtributes();
+		
+		if($select.prop('disabled') == true)
+		{
+			$this.vars.wrapper.addClass('sf-s-disabled').prop("tabindex", "-1");
+			
+		}
+		else
+		{
+			$this.vars.wrapper.removeClass('sf-s-disabled').prop("tabindex", "0");
+		}
+		
+		$select.find('optgroup').each(function()
+		{
+			$group = $this.vars.menuUl.find('.sf-s-optgroup[data-index="'+$(this).index()+'"]');
+			
+			if($(this).prop('disabled') == true)
+			{
+				$group.addClass('sf-s-opt-group-disabled').find('.sf-s-default').addClass('sf-s-option-disabled');
+			}
+			else
+			{
+				$group.removeClass('sf-s-opt-group-disabled').find('.sf-s-default').removeClass('sf-s-option-disabled');
+			}
+			
+		});
+		
+		$select.find('option').each(function()
+		{
+			$option = $this.vars.menuUl.find('.sf-s-default[data-value="'+$(this).val()+'"]');
+			
+			if($(this).prop('disabled') == true || $(this).closest('optgroup:disabled').length > 0)
+			{
+				$option.addClass('sf-s-option-disabled');
+			}
+			else
+			{
+				$option.removeClass('sf-s-option-disabled');
+			}
+			
+		});
+		
+		if($select.prop('autofocus') == true)
+		{
+			$this.vars.wrapper.focus();
+			
+		}
+		
+		$this._change();
+		
+		if($select.hasClass($this.options.errorClass))
+		{
+			$this.vars.wrapper.addClass($this.options.errorClass);
+		}
+		else
+		{
+			$this.vars.wrapper.removeClass($this.options.errorClass);
+		}
+	},
+	
+	_isMultiple: function()
+	{
+		return this.element.prop('multiple') == true;
+	},
+	
+	_change: function()
+	{
+		var $this = this;
+		var $select = $this.element;
+		
+		if($this._isMultiple())
+		{
+			$selectedValues = $this.vars.menuUl.data('selected');
+			$values = $select.val();
+			
+			$.each($values, function(iteration, element)
+			{
+				if(typeof $selectedValues !== 'undefined' && $selectedValues.length)
+				{
+					index = $selectedValues.indexOf(element)
+					if(index < 0)
+					{
+						$selected = $this.vars.menuUl.find('.sf-s-default[data-value="'+element+'"]').addClass('sf-s-active');
+						$content = $('<div class="sf-s-multi-element" data-value="'+element+'"><span class="sf-s-multi-element-remover"></span><span class="sf-s-multi-element-content">'+$.trim($selected.html().replace(/&nbsp;/g,''))+'</span></div>');
+						if(iteration == 0)
+						{
+							$this.vars.wrapper.find('.sf-s-multi-holder .sf-s-multi-element').eq(iteration).before($content);
+						}
+						else
+						{
+							$this.vars.wrapper.find('.sf-s-multi-holder .sf-s-multi-element').eq(iteration-1).after($content);
+						}
+							
+						
+						$this._initRemoveMultipleSelectedOpt($content);
+					}
+					else
+						$selectedValues.splice(index, 1);
+				}
+				else
+				{
+					
+					$selected = $this.vars.menuUl.find('.sf-s-default[data-value="'+element+'"]').addClass('sf-s-active');
+					$content = $('<div class="sf-s-multi-element" data-value="'+element+'"><span class="sf-s-multi-element-remover"></span><span class="sf-s-multi-element-content">'+$.trim($selected.html().replace(/&nbsp;/g,''))+'</span></div>');
+					$this.vars.wrapper.find('.sf-s-multi-holder').append($content);
+					$this._initRemoveMultipleSelectedOpt($content);
+				}
+			});
+			
+			$.each($selectedValues, function(iteration, element)
+			{
+				$this.vars.menuUl.find('.sf-s-default[data-value="'+element+'"]').removeClass('sf-s-active');
+				$this.vars.wrapper.find('.sf-s-multi-holder .sf-s-multi-element[data-value="'+element+'"]').remove();
+			});			
+			
+			
+			$this.vars.menuUl.data('selected', $values);
+		}
+		else
+		{
+			$value = $select.val();
+			$this.vars.menuUl.find('.sf-s-default.sf-s-active').removeClass('sf-s-active');
+			$selected = $this.vars.menuUl.find('.sf-s-default[data-value="'+$value+'"]').addClass('sf-s-active');
+			$this.vars.wrapper.find('p.sf-s-holder .sf-s-selected').html($.trim($selected.html().replace(/&nbsp;/g,'')));
+		}
+	},
+	
+	_initRemoveMultipleSelectedOpt: function(element)
+	{
+		var $this = this;
+		var $select = $this.element;
+		
+		element.find('.sf-s-multi-element-remover').off('click.sf_select').on('click.sf_select', function(event)
+		{
+			$this._close();
+			$value = element.data('value');
+			$select.find('option[value="'+$value+'"]').prop('selected', false);
+			$this.vars.menuUl.find('.sf-s-default[data-value="'+$value+'"]').removeClass('sf-s-active');
+			element.remove();
+			$this.vars.menuUl.data('selected', $select.val());
+			event.stopPropagation();
+			return false;
+		});
+	},
+	
 	_destroy:function()
 	{
-		this.element.removeData();
-		this.element.removeClass('sf-s-styled');
-		this.element.closest('.sf-s-wrapper').replaceWith(this.element.old);
+		if(this.vars.observer)
+			this.vars.observer.disconnect();
+		
+		this.element.removeClass('sf-hide');
+		this.element.removeData(this.widgetFullName);
+		this.element.off('.sf_select');
+		this.vars.menu.remove();
+		this.element.closest('.sf-s-wrapper').replaceWith(this.element);
 	},
 	destroy:function(){this._destroy();this._super();},
-	
-	_setOption: function(key, value) {
-        this._super( key, value );
-    },
-	
-	_getOption: function(key) {
-		return this.options[key];
-    },
-	
-    _setOptions: function( options ) {
-		this._super(options);
-    },
 	
 	_refresh:function()
 	{
@@ -452,222 +737,227 @@ $.widget("SuperForm.superSelect", {
 		var $this = this;
 		var $select = this.element;
 		
-		var minWidth = 0;
-		var paddingListElement = 0;
-		
-		var list;
-		var clone = $select.closest('.sf-s-wrapper').clone().css('width', 'auto').appendTo('body');
-		if(this.options.absolute)
+		if($select.prop('multiple'))
 		{
-			list = $("#sf-s-list-"+$this.uuid);
-			var cloneList = list.clone().appendTo('body');
-		}
-		else
-		{
-			list = $select.closest('.sf-s-wrapper');
-		}
-		
-		var holder = clone.find('p.sf-s-holder');
-		
-		var listElements;
-		if($this.options.absolute)
-		{
-			listElements = cloneList.find('ul.sf-s-list-inner .sf-s-default, ul.sf-s-list-inner .sf-s-optgroup-label');
-		}
-		else
-		{
-			listElements = clone.find('ul.sf-s-list-inner .sf-s-default, ul.sf-s-list-inner .sf-s-optgroup-label');
-		}
-		
-		clone.find('ul.sf-s-list').css({width: 'auto'});
-		listElements.css({position: 'absolute',width: 'auto', overflow: 'visible', fontSize: holder.find('a').css('font-size'), fontWeight: holder.find('a').css('font-weight')});
-		
-		if(listElements.length > 0)
-		{
-			listElements.each(function(index, element)
-			{
-				if(element.scrollWidth > minWidth)
-					minWidth = element.scrollWidth+3;
-			});
+			$this.vars.menuUlWrap.css('width', 'auto');
 			
-			if(listElements.closest('.sf-s-list').hasClass('sf-s-overflow'))
-					minWidth = parseInt(minWidth)+20;
-		}
-		paddingListElement = listElements.innerWidth()-listElements.width();
-		
-		if($select.prop('style').width.toString().length > 0 || $select.prop('style')['max-width'].toString().length > 0 || window.getComputedStyle($select[0]).width != 'auto')
-		{
-			if($select.prop('style')['max-width'].toString().length > 0)
-				var selectWidth = Math.ceil(parseInt($select.prop('style')['max-width'].toString()));
-			else if($select.prop('style').width.toString().length > 0)
-				var selectWidth = Math.ceil(parseInt($select.prop('style').width.toString()));
+			holder = $this.vars.wrapper.find('.sf-s-multi-holder');
+			holderText = holder.append('<div class="sf-s-multi-element helper"><span class="sf-s-multi-element-remover"></span><span class="sf-s-multi-element-content"></span></div>').find('.sf-s-multi-element.helper');
+			propStyle = holderText.prop('style');
+			
+			propStyle = new Map(propStyle);
+			propStyle.delete('length');
+			
+			listElements = $this.vars.menuUl.find('.sf-s-default, .sf-s-optgroup-label').css(propStyle);
+			
+			minWidth = Math.max.apply( null, listElements.map( function () {
+			    return this.scrollWidth;
+			}).get())-3;
+			
+			if(typeof(oldStyle) != 'undefined')
+				listElements.css(oldStyle);
 			else
-				var selectWidth = window.getComputedStyle($select[0]).width;
+				listElements.removeAttr('style');
 			
-			$select.closest('.sf-s-wrapper').css('width', selectWidth);
-			selectWidth = $select.closest('.sf-s-wrapper').outerWidth();
-			if(minWidth > selectWidth)
-				list.find('.sf-s-list').css('width', minWidth);
+			paddingListElement = listElements.innerWidth()-listElements.width();
+			
+			minWidthList = Math.max.apply( null, listElements.map( function () {
+			    return this.scrollWidth;
+			}).get());
+			
+			if($select.prop('style').width.toString().length > 0 || $select.prop('style')['max-width'].toString().length > 0 || window.getComputedStyle($select[0]).width != 'auto')
+			{
+				if($select.prop('style')['max-width'].toString().length > 0)
+					var selectWidth = $select.prop('style')['max-width'].toString();
+				else if($select.prop('style').width.toString().length > 0)
+					var selectWidth = $select.prop('style').width.toString();
+				else
+					var selectWidth = window.getComputedStyle($select[0]).width;
+				
+				$this.vars.wrapper.css('width', selectWidth);
+				selectWidth = $this.vars.wrapper.outerWidth();
+				
+			}
+			else
+			{
+				var selectWidth = Math.ceil(holderText.outerWidth(false))+minWidth-paddingListElement;
+				$this.vars.wrapper.width(selectWidth);
+			}
+			
+			holderText.remove();
+			
+			if(minWidthList > selectWidth)
+				$this.vars.menuUlWrap.css('width', minWidthList);
+			else
+				$this.vars.menuUlWrap.css('width', selectWidth);
 		}
 		else
 		{
-			var width = Math.ceil(holder.outerWidth(false))-Math.ceil(holder.width())+minWidth-paddingListElement;
-			$select.closest('.sf-s-wrapper').width(width);
+			$this.vars.menuUlWrap.css('width', 'auto');
+			
+			holder = $this.vars.wrapper.find('.sf-s-holder');
+			holderText = $this.vars.wrapper.find('.sf-s-selected');
+			oldStyle = holderText.attr('style');
+			propStyle = holderText.prop('style');
+		
+			propStyle = new Map(propStyle);
+			propStyle.delete('length');
+			
+			listElements = $this.vars.menuUl.find('.sf-s-default, .sf-s-optgroup-label').css(propStyle);
+			
+			minWidth = Math.max.apply( null, listElements.map( function () {
+			    return this.scrollWidth;
+			}).get())+5;
+			
+			if(typeof(oldStyle) != 'undefined')
+				listElements.css(oldStyle);
+			else
+				listElements.removeAttr('style');
+			
+			paddingListElement = listElements.innerWidth()-listElements.width();
+			
+			minWidthList = Math.max.apply( null, listElements.map( function () {
+			    return this.scrollWidth;
+			}).get())+5;
+			
+			if($select.prop('style').width.toString().length > 0 || $select.prop('style')['max-width'].toString().length > 0 || window.getComputedStyle($select[0]).width != 'auto')
+			{
+				if($select.prop('style')['max-width'].toString().length > 0)
+				{
+					var selectWidth = $select.prop('style')['max-width'].toString();
+				}
+				else if($select.prop('style').width.toString().length > 0)
+				{
+					var selectWidth = $select.prop('style').width.toString();
+				}
+				else
+				{					
+					var selectWidth = window.getComputedStyle($select[0]).width;
+				}
+									
+				$this.vars.wrapper.css('width', selectWidth);
+				selectWidth = $this.vars.wrapper.outerWidth();
+			}
+			else
+			{
+				var selectWidth = Math.ceil(holder.outerWidth(false))-Math.ceil(holder.width())+minWidth-paddingListElement;
+				$this.vars.wrapper.width(selectWidth);
+			}
+			
+			if(minWidthList > selectWidth)
+				$this.vars.menuUlWrap.css('width', minWidthList);
+			else
+				$this.vars.menuUlWrap.css('width', selectWidth);
 		}
-		
-		if($select.closest('.sf-s-wrapper').offset().left+minWidth > $('body').offset().left+$('body').width())
-			list.find('.sf-s-list').addClass('sf-s-list-to-right');
-		else
-			list.find('.sf-s-list').removeClass('sf-s-list-to-right');
-		
-		if($this.options.absolute)
-		{
-			list.find('.sf-s-list').css({width: minWidth+"px"});
-//			list.find('.sf-s-list').css({width: $select.closest('.sf-s-wrapper').width()+"px"});
-			cloneList.remove();
-		}
-		
-		clone.remove();
 	},
 	
 	_setUpList:function()
 	{
 		var $this = this;
-		if($this.options.absolute)
+		var $select = $this.element;
+		
+		$this.vars.menu.css({height: 'auto', top: 'auto'});
+		$this.vars.menuUlWrap.removeClass('sf-s-overflow').css({height: 'auto', top: 'auto'});
+		
+		if($select.prop('size').length && Math.ceil($this.vars.menuUl.find('.sf-s-default:visible').length)+Math.ceil($this.vars.menuUl.find('.sf-s-optgroup:visible').length))
 		{
-			var $list = $("#sf-s-list-"+this.uuid);
-			
-			$(document).off('selectHide').on('selectHide', function()
-			{
-				$('.sf-s-list-wrap-absolute').each(function()
-				{
-					var $select2 = $("#sf-s-select-"+$(this).attr('id').replace('sf-s-list-',''));
-					if(typeof($select2.offset()) != 'undefined')
-					{
-						$(this).css({
-							left: $select2.offset().left+"px",
-							top: $select2.offset().top+$select2.outerHeight()+"px"
-						});
-					}
-				});
-			});
-
-			if(interval != null)
-				clearInterval(interval);
-			
-			var interval = setInterval(function(){
-				$(document).trigger('selectHide');
-			}, 1000/15);
-		}
-		else
-		{
-			var $list = this.element.closest('.sf-s-wrapper');
+			$this.vars.menuUlWrap.addClass('sf-s-overflow').height(Math.ceil($select.prop('size'))*$this.vars.menuUlWrap.find('li.sf-s-default').outerHeight());
 		}
 		
-		$list.find('.sf-s-list').removeClass('sf-hide').removeClass('sf-s-overflow').css({height: 'auto', top: 'auto'});
-		
-		if($list.find('.sf-s-list ul.scrollbar-formated-default'))
-			$list.find('.sf-s-list ul.scrollbar-formated-default').css('max-height', 'none');
-		
-		if(Math.ceil(this.options.maxListElement) > 0)
-		{
-			var $lengthVisible = Math.ceil($list.find('.sf-s-list .sf-s-default:visible').length)+Math.ceil($list.find('.sf-s-list .sf-s-optgroup:visible').length);
-			if($lengthVisible > Math.ceil(this.options.maxListElement))
-			{
-				$list.find('.sf-s-list').addClass('sf-s-overflow');
-				$list.find('.sf-s-list').height(Math.ceil(this.options.maxListElement)*$list.find('ul.sf-s-list-inner li.sf-s-default').outerHeight());
-			}
-		}
-		
-		if(Math.ceil(this.element.data().maxlistelement) > 0)
-		{
-			var $lengthVisible = Math.ceil($list.find('.sf-s-list .sf-s-default:visible').length)+Math.ceil($list.find('.sf-s-list .sf-s-optgroup:visible').length);
-			if($lengthVisible > Math.ceil(this.element.data().maxlistelement))
-			{
-				$list.find('.sf-s-list').addClass('sf-s-overflow');
-				$list.find('.sf-s-list').height(Math.ceil(this.element.data().maxlistelement)*$list.find('ul.sf-s-list-inner li.sf-s-default').outerHeight());
-			}
-		}
-
-		var listHeight = Math.ceil($list.find('.sf-s-list').outerHeight());
+		$this.vars.menuUlWrap.addClass('sf-show-visible');
+		var listHeight = Math.ceil($this.vars.menuUlWrap.outerHeight());
 		
 		if(this.options.window)
 		{
-			var upHeight = Math.ceil(this.element.closest('.sf-s-wrapper').offset().top-$(window).scrollTop());
-			var downHeight = Math.ceil($(window).height()-(this.element.closest('.sf-s-wrapper').offset().top+this.element.closest('.sf-s-wrapper').outerHeight()-$(window).scrollTop()));
+			var upHeight = Math.ceil($this.vars.wrapper.offset().top-$(window).scrollTop());
+			var downHeight = Math.ceil($(window).height()-($this.vars.wrapper.offset().top+$this.vars.wrapper.outerHeight()-$(window).scrollTop()));
 		}
 		else
 		{
-			var upHeight = Math.ceil($list.offset().top);
-			var downHeight = Math.ceil(this.element.closest('body').height()-$list.find('.sf-s-list').offset().top);
+			var upHeight = Math.ceil($this.vars.wrapper.offset().top);
+			var downHeight = Math.ceil($('body').height()-$this.vars.wrapper.offset().top);
 		}
-
+		
+		var positionClass = "";
+		if($this.vars.menu.offset().left+$this.vars.menu.outerWidth(true) > $('body').width())
+		{
+			horizontalAlign = "right";
+			positionClass += 'sf-s-to-right';
+		}
+		else
+			horizontalAlign = "left";
+		
+		console.log("Down height "+downHeight);
+		console.log("Up height "+upHeight);
+		console.log("listHeight "+listHeight);
+		
+		console.log("Window Scroll Top "+window.pageYOffset);
+		console.log("Wrapper offset Top "+$this.vars.wrapper.offset().top);
+		
 		if(downHeight < listHeight)
 		{
             if(upHeight < listHeight)
             {
+            	var singleHeight = $this.vars.menuUl.find('li.sf-s-default').outerHeight();
                 if(upHeight > downHeight)
                 {
-                    var maxelement = Math.ceil(upHeight/$list.find('ul.sf-s-list-inner li.sf-s-default').outerHeight())-1;
+                	var maxelement = Math.ceil(upHeight/singleHeight)-1;
 					
 					if(maxelement === 0)
                        maxelement = 1;
                    
-				    maxelement = Math.ceil(maxelement*$list.find('ul.sf-s-list-inner li.sf-s-default').outerHeight());
+				    var maxHeight = Math.ceil(maxelement*singleHeight);
 					
-                    $list.find('.sf-s-list').addClass('sf-s-overflow');
-                    listHeight = Math.ceil($list.find('.sf-s-list').css('height', maxelement).outerHeight());
-					
-					if($this.options.absolute)
-					{
-						$(document).off('selectHide').on('selectHide', function()
-						{
-							$list.css({
-								left: $this.element.closest('.sf-s-wrapper').offset().left+"px",
-								top: $this.element.closest('.sf-s-wrapper').offset().top+"px"
-							});
-						});
-					}
-					
-					$list.addClass('sf-s-to-top');
-                    $list.find('.sf-s-list').css('top', '-'+listHeight+'px');
+				    $this.vars.menuUlWrap.height(maxHeight).addClass('sf-s-overflow');
+				    $this.vars.menu.height(maxHeight);
+				    
+				    verticalAlignMy = 'bottom';
+				    verticalAlignAt = 'top';
+				    positionClass += ' sf-s-to-top';
                 }
                 else
-                {
-                    var maxelement = Math.ceil(downHeight/$list.find('ul.sf-s-list-inner li.sf-s-default').outerHeight())-1;
+                {	
+                	var maxelement = Math.ceil(downHeight/singleHeight)-1;
                     
                     if(maxelement === 0)
                        maxelement = 1;
                    
-					maxelement = Math.ceil(maxelement*$list.find('ul.sf-s-list-inner li.sf-s-default').outerHeight());
-                    $list.find('.sf-s-list').addClass('sf-s-overflow');
-					
-					$list.removeClass('sf-s-to-top');
-                    $list.find('.sf-s-list').css('height', maxelement);
+                    var maxHeight = Math.ceil(maxelement*singleHeight);
+
+    				$this.vars.menuUlWrap.height(maxHeight).addClass('sf-s-overflow');
+    				$this.vars.menu.height(maxHeight);
+                	
+					verticalAlignMy = 'bottom';
+				    verticalAlignAt = 'top';
+				    positionClass += ' sf-s-to-top';
                 }
             }
             else
-            {
-				if($this.options.absolute)
-				{
-					$(document).off('selectHide').on('selectHide', function()
-					{
-						$list.css({
-							left: $this.element.closest('.sf-s-wrapper').offset().left+"px",
-							top: $this.element.closest('.sf-s-wrapper').offset().top+"px"
-						});
-					});
-				}
-				
-                $list.addClass('sf-s-to-top');
-                $list.find('.sf-s-list').css('top', '-'+listHeight+'px');
+            {            	
+            	verticalAlignMy = 'bottom';
+			    verticalAlignAt = 'top';
+			    positionClass += ' sf-s-to-top';
             }
 		}
 		else
-		{	
-			$list.removeClass('sf-s-to-top');
-			$list.find('.sf-s-list');
+		{
+			verticalAlignMy = 'top';
+		    verticalAlignAt = 'bottom';
 		}
+		
+		$this.vars.menu.position({
+			'my': horizontalAlign+" "+verticalAlignMy,
+			'at': horizontalAlign+" "+verticalAlignAt,
+			'of': $this.vars.wrapper
+		}).addClass(positionClass);
+		
+		zIndex = $this.vars.menu.css('z-index');
+		if(zIndex == 'auto')
+			zIndex = 0;
+		
+		$this.vars.wrapper.css('z-index', zIndex+1).addClass(positionClass);
+		
+		$this.vars.menuUlWrap.removeClass('sf-show-visible');
 	},
 	
 	
@@ -910,274 +1200,87 @@ $.widget("SuperForm.superSelect", {
 	},
 	
 	_open:function(){
+		$('html').trigger('click.sf_select');
 		
 		var $this = this;
 		var $select = this.element;
 		
-		if($select.hasClass('sf-s-list-is-open'))
+		if($select.hasClass('sf-s-list-is-open') || $select.prop('disabled') == true)
 			return false;
 		
-		$('select.sf-s-styled').selectStyle('close');
-		
-		$('html body').on('click.i_select', function()
-		{
-			$this._close();
-		});
+		$('select.sf-s-styled').superSelect('close');
 		
 		this._setUpList();
 		
 		$select.addClass('sf-s-list-is-open');
-		$select.closest('.sf-s-wrapper').find('p.sf-s-holder').addClass('sf-s-list-open');
+		
+		$this.vars.wrapper.find('p.sf-s-holder').addClass('sf-s-list-open');
 		
 		var $selected;
+		$selected = $this.vars.menuUl.find('.sf-s-default.sf-s-active').first();
 		
-		if($this.options.absolute)
+		if($selected.length > 0)
 		{
-			$selected = $("#sf-s-list-"+$this.uuid).find('.sf-s-default.sf-s-active');
+			$this.vars.menuUlWrap.scrollTop(0).scrollTop($selected.position().top-$this.vars.menuUl.height()+$select.outerHeight(true));
 		}
-		else
-		{
-			$selected = $select.closest('.sf-s-wrapper').find('.sf-s-default.sf-s-active');
-		}
-		
-		if($selected)
-		{
-			var list;
 			
-			if($this.options.absolute)
+		var zIndexs = [];
+		$select.parents().each(function()
+		{
+			if(!isNaN(parseInt($(this).css('z-index'))))
 			{
-				list = $("#sf-s-list-"+$this.uuid).find('.sf-s-list.sf-s-overflow');
-			}
-			else
-			{
-				list = $select.closest('.sf-s-wrapper').find('.sf-s-list.sf-s-overflow');
-			}
-
-			if(list && $selected.length)
-			{
-				list.scrollTop(0);
-				list.scrollTop($selected.position().top-list.height()+$select.outerHeight(true));
-			}
-		}
-		
-		if($this.options.absolute)
-		{
-			
-			var zIndexs = [];
-			$select.parents().each(function()
-			{
-				if(!isNaN(parseInt($(this).css('z-index'))))
-				{
-					zIndexs.push(parseInt($(this).css('z-index')));
-				}
-			});
-			
-			var zIndex = Math.max.apply(Math,zIndexs);;
-			$("#sf-s-list-"+$this.uuid).find('.sf-s-list').removeClass('sf-hide-opacity').attr('tabindex', '1');
-			
-			if(!isNaN(zIndex))
-			{
-				$("#sf-s-list-"+$this.uuid).css({'zIndex': zIndex});
-			}
-		}
-		else 
-		{
-			$select.closest('.sf-s-wrapper').find('.sf-s-list').removeClass('sf-hide-opacity').attr('tabindex', '1').focus();
-		}
-	},
-	
-	_close:function()
-	{
-		var $this = this;
-		if(!this.element.hasClass('sf-s-list-is-open'))
-			return false;
-		
-		this.element.removeClass('sf-s-list-is-open');
-		this.element.closest('.sf-s-wrapper').find('p.sf-s-holder').removeClass('sf-s-list-open');
-		this.element.closest('.sf-s-wrapper').find('p.sf-s-holder .sf-s-button').removeClass('sf-s-list-open');
-		
-		var list;
-		if($this.options.absolute)
-		{
-			list = $("#sf-s-list-"+this.uuid);
-		}
-		else
-		{
-			list = this.element.closest('.sf-s-wrapper');
-		}
-		
-		list.find('.sf-s-list').addClass('sf-hide-opacity').attr('tabindex', '0');
-		$('html body').off('click.i_select');
-	},
-	close:function(){this._close();},
-	
-	_renderMenu:function(){
-		var $this = this;
-		var $select = this.element;
-		
-		$select.wrap('<div id="sf-s-select-'+$this.uuid+'" data-id="'+$this.uuid+'" class="sf-s-wrapper">');
-			
-		//Add class to input
-		if($.type($this.options.inputClass) === "string")
-			$select.addClass($this.options.inputClass).closest('.sf-s-wrapper');
-		else if($.type($this.options.inputClass) === "null"){}
-		else
-			console.exception('Wrong value for inputClass is have to be string.');
-
-		var $class = '';
-		//Add class to wrap
-		if($.type($this.options.wrapClass) === "boolean")
-		{
-			if($this.options.wrapClass === true)
-			{
-				var classList = $select.attr('class').split(/\s+/);
-				$.each(classList, function(index, item) {
-					$select.closest('.sf-r-wrapper').addClass('sf-s-class-'+item);
-				});
-			}
-		}
-		else if($.type($this.options.wrapClass) === "string")	
-			$class = $this.options.wrapClass;
-		else if($.type($this.options.wrapClass) === "null"){}
-		else
-			console.exception('Wrong value for wrapClass is have to be string.');
-
-		if($select.data().class)
-			$class = $select.data().class;
-
-		$select.closest('.sf-s-wrapper').addClass($class);
-
-		//Add title to wrap or set from input
-		if($.type($this.options.wrapTitle) === "boolean")
-		{
-			if($this.options.wrapTitle === true)
-				$select.closest('.sf-s-wrapper').attr('title', $select.attr('title'));
-		}
-		else if($.type($this.options.wrapTitle) === "string")
-		{
-			$select.closest('.sf-s-wrapper').attr('title', $this.options.wrapTitle);
-		}
-		else if($.type($this.options.wrapTitle) === "null"){}
-		else
-		{
-			console.exception('Wrong value for wrapTitle check documentation at www.agendo.pl');
-		}
-
-		$select.closest('.sf-s-wrapper').append('<p class="sf-s-holder">');
-		$select.closest('.sf-s-wrapper').find('p.sf-s-holder').append('<a href="javascript:void(0)">');
-		$select.closest('.sf-s-wrapper').find('p.sf-s-holder').append('<span class="sf-s-button">');
-		
-//		console.log($this.uuid+' '+$this.options.absolute);
-		if($this.options.absolute)
-		{
-			$('body').append('<div id="sf-s-list-'+$this.uuid+'" class="sf-s-list-wrap-absolute '+$class+'"><div class="sf-s-list sf-hide-opacity"><ul class="sf-s-list-inner scrollbar-formated-default"></ul></div></div>');
-		}
-		else
-		{
-			$select.closest('.sf-s-wrapper').append('<div class="sf-s-list sf-hide-opacity"><ul class="sf-s-list-inner scrollbar-formated-default"></ul></div>');
-		}
-	},
-	
-	_renderItem:function()
-	{
-		var $this = this;
-		$this.element.children('option, optgroup').each(function()
-		{
-			var $thisO = $(this);
-			if($(this).is('option'))
-			{
-				var is_selected = '', is_disabled = '';
-				
-				var clone = $(this).clone();
-				clone.find('input[disabled]').remove();
-				var html = clone.html();
-				if($(this).data().icon)
-					html = $(this).data().icon+html;
-				
-				if($(this).is(':selected'))
-				{
-					is_selected = ' sf-s-active sf-s-hover';
-					$this.element.closest('.sf-s-wrapper').find('p.sf-s-holder a').html($.trim(html.replace(/&nbsp;/g,'')));
-				}
-				
-				if($(this).is(':disabled'))
-				{
-					is_disabled = ' sf-s-option-disabled';
-				}
-				
-				if($this.options.absolute)
-				{
-					if(!($this.element.data().active_not_show_on_list && $(this).is(':selected')))
-					{
-						
-						var optionAdded = $('<li class="sf-s-default'+is_selected+is_disabled+'"><input type="hidden" disabled value="'+$(this).val()+'" />'+html+'</li>').appendTo($('#sf-s-list-'+$this.uuid).find('ul.sf-s-list-inner'));
-						if(typeof($thisO.attr('class')) != 'undefined')
-						{
-							optionAdded.addClass($thisO.attr('class'));
-						}
-						optionAdded = null;
-					}
-						
-				}
-				else
-				{
-					if(!($this.element.data().active_not_show_on_list && $(this).is(':selected')))
-					{	
-						var optionAdded = $('<li class="sf-s-default'+is_selected+is_disabled+'"><input type="hidden" disabled value="'+$(this).val()+'" />'+html+'</li>').appendTo($this.element.closest('.sf-s-wrapper').find('ul.sf-s-list-inner'));
-						if(typeof($thisO.attr('class')) != 'undefined')
-						{
-							optionAdded.addClass($thisO.attr('class'));
-						}
-						optionAdded = null;
-					}
-				}
-			}
-			else
-			{
-				var $wrap = $('<li></li>').addClass('sf-s-optgroup').append('<ul class="sf-s-optgroup-list"></ul>');
-				if($(this).attr('label').length > 0)
-					$wrap.find('ul').append('<li><p class="sf-s-optgroup-label">'+$(this).attr('label')+'</p></li>');
-
-				$(this).find('option').each(function()
-				{
-					var $thisO = $(this);
-					var is_selected = '', is_disabled = '';
-					var html = $(this).html();
-					if($(this).data().icon)
-						html = $(this).data().icon+html;
-					
-					if($(this).is(':selected'))
-					{
-						is_selected = ' sf-s-active sf-s-hover';
-						$this.element.closest('.sf-s-wrapper').find('p.sf-s-holder a').html(html);
-					}
-					
-					if($(this).is(':disabled'))
-					{
-						is_disabled = ' sf-s-option-disabled';
-					}
-					
-					if(!($this.element.data().active_not_show_on_list && $(this).is(':selected')))
-					{
-						var optionAdded = $('<li class="sf-s-default'+is_selected+is_disabled+'"><input type="hidden" disabled value="'+$(this).val()+'" />'+html+'</li>').appendTo($wrap.find('ul'));
-						if(typeof($thisO.attr('class')) != 'undefined')
-						{
-							optionAdded.addClass($thisO.attr('class'));
-						}
-						optionAdded = null;
-					}
-				});
-
-				if($this.options.absolute)
-				{
-					$('#sf-s-list-'+$this.uuid).find('ul.sf-s-list-inner').append($wrap);
-				}
-				else {
-					$this.element.closest('.sf-s-wrapper').find('ul.sf-s-list-inner').append($wrap);
-				}
+				zIndexs.push(parseInt($(this).css('z-index')));
 			}
 		});
-	}
+		
+		var zIndex = Math.max.apply(Math,zIndexs)-1;
+		
+		$this.vars.menuUlWrap.removeClass('sf-hide-opacity').attr('tabindex', '1');
+		
+		if(!isNaN(zIndex))
+		{
+			$this.vars.menu.css({'zIndex': zIndex});
+		}
+		
+		$('html').on('click.sf_select', function()
+		{
+			$this._close();
+		})
+		
+		$(this).addClass('sf-s-hover');
+		
+		$(window).on('scroll.sf_select', function(event)
+		{
+			if($('body').outerHeight()-$(window).outerHeight() - $(window).scrollTop() > 1)
+			{
+				//This is better for users but worst for performance
+//				$this._setUpList();
+				
+				//This is the default bahaviour of select
+				$this._close();
+			}
+			
+		}).on('resize.sf_select', function(event)
+		{
+			$this._close();
+		});
+	},
+	
+	_close:function(caller)
+	{
+		$('html').off('click.sf_select').off('mouseenter.sf_select');
+		$(window).off('scroll.sf_select').off('resize.sf_select');
+		var $this = this;
+		if(!$this.element.hasClass('sf-s-list-is-open'))
+			return false;
+		
+		$this.element.removeClass('sf-s-list-is-open');
+		$this.vars.wrapper.css('z-index', '0').find('p.sf-s-holder').removeClass('sf-s-list-open').find('.sf-s-button').removeClass('sf-s-list-open');
+
+		$this.vars.menuUlWrap.addClass('sf-hide-opacity').attr('tabindex', '0');
+		
+	},
+	close:function(){this._close();},
 });
 
 $.widget("SuperForm.superRadio", {
@@ -1344,16 +1447,14 @@ $.widget("SuperForm.superRadio", {
 		
 		if($input.data().hover === true || $this.options.hover)
 		{
-			$input.closest('.sf-r-wrapper').off('mouseenter.i_radio').on('mouseenter.sf_radio', function(event)
+			$input.closest('.sf-r-wrapper').off('mouseenter.sf_radio').on('mouseenter.sf_radio', function(event)
 			{
 				if($input.prop('disabled') != true)
 				{
 					$(this).addClass('sf-r-hover');
 					$this._trigger( "onEnter", event, $input);
 				}
-			});
-
-			$input.closest('.sf-r-wrapper').off('mouseleave.i_radio').on('mouseleave.sf_radio', function(event)
+			}).off('mouseleave.sf_radio').on('mouseleave.sf_radio', function(event)
 			{
 				if($input.prop('disabled') != true)
 				{
@@ -1436,9 +1537,28 @@ $.widget("SuperForm.superRadio", {
     
 	_destroy:function()
 	{
-		this.element.removeClass('sf-r-styled');
+		if(this.vars.observer)
+			this.vars.observer.disconnect();
+		
+		this.element.removeClass('sf-r-styled sf-hide');
 		this.element.removeData(this.widgetFullName);
-		this.element.closest('.sf-r-wrapper').replaceWith(this.element);
+		this.element.off('change.sf-radio');
+		
+		switch (this.vars.old) {
+			case 'inner':
+				old = this.element.closest('label').off('keydown.sf_radio');
+				old.find('.sf-r-default').remove();
+				break;
+			case 'outside':
+				$('label[for="'+this.element.attr('id')+'"]').removeClass('sf-hide');
+				old = this.element;
+				break;
+			default:
+				old = this.element;
+				break;
+		}
+		
+		this.element.closest('.sf-r-wrapper').replaceWith(old);
 	},
 	destroy:function(){this._destroy();},
 	
@@ -1596,7 +1716,7 @@ $.widget("SuperForm.superCheckbox", {
 			e.stopPropagation();
 		});
 		
-		$input.closest('label').find('.sf-ch-default').off('keydown.sf_radio').on('keydown.sf_radio', function(event)
+		$input.closest('label').find('.sf-ch-default').off('keydown.sf_checkbox').on('keydown.sf_checkbox', function(event)
 		{
 			if(this === document.activeElement)
 			{
@@ -1624,9 +1744,8 @@ $.widget("SuperForm.superCheckbox", {
 					$(this).addClass('sf-ch-hover');
 					$this._trigger( "onEnter", event, $input);
 				}
-			});
-
-			$input.closest('.sf-ch-wrapper').off('mouseleave.sf_checkbox').on('mouseleave.sf_checkbox', function(event)
+			})
+			.off('mouseleave.sf_checkbox').on('mouseleave.sf_checkbox', function(event)
 			{
 				if($input.prop('disabled') !== true)
 				{
@@ -1713,11 +1832,12 @@ $.widget("SuperForm.superCheckbox", {
 		
 		this.element.removeClass('sf-ch-styled sf-hide');
 		this.element.removeData(this.widgetFullName);
+		this.element.off('change.sf-checkbox');
 		
 		switch (this.vars.old) {
 			case 'inner':
-				old = this.element.closest('label').off('click.i_checkbox');
-				old.find('a').remove();
+				old = this.element.closest('label').off('keydown.sf-checkbox');
+				old.find('.sf-ch-default').remove();
 				break;
 			case 'outside':
 				$('label[for="'+this.element.attr('id')+'"]').removeClass('sf-hide');
