@@ -52,6 +52,18 @@
 			<input type="checkbox" title="New title" name="ch_test_4">
 			<br/>
 			<br/>
+			<div style="text-align: right;">
+				<select name="s_test">
+					<option value="1">One</option>
+					<option selected value="2">Two</option>
+					<option value="3">Three long option</option>
+				</select>
+				<select name="s_test" style="max-width: 200px;">
+					<option value="1">One</option>
+					<option selected value="2">Two</option>
+					<option value="3">Three long option Three long option Three long option Three long option</option>
+				</select>
+			</div>
 			<div id="includedContent">
 
 			</div>
@@ -78,14 +90,16 @@
 	<section class="styleform width-content">
 		<h2>Selects</h2>
 		<div>
-			<select class="sf-s-ignore" name="s_test">
+			<select class="sf-s-ignore" required name="s_test">
+			<option value="">- wybierz -</option>
 				<option value="1">One</option>
 				<option value="2">Two</option>
 				<option value="3">Three</option>
 			</select>
 			<br/>
 			<br/>
-			<select name="s_test">
+			<select name="s_test" required>
+				<option value="">- wybierz -</option>
 				<option value="1">One</option>
 				<option value="2">Two</option>
 				<option value="3">Three</option>
@@ -99,11 +113,78 @@
 				<option disabled value="1">One</option>
 				<option value="2">Two</option>
 				<option value="3">Three</option>
+				<option value="4">Four</option>
+				<option value="5">Five</option>
+				<option value="6">Six</option>
+				<option value="7">Seven</option>
+				<option value="8">Eight</option>
+				<option value="9">Nine</option>
+				<option value="10">Ten</option>
+				<option value="11">Eleven</option>
 			</select>
-			<select name="s_test">
+			<select name="s_test" autofocus style="max-width: 100px;">
 				<option value="1">One</option>
 				<option selected value="2">Two</option>
-				<option value="3">Three</option>
+				<option value="3">Three long option</option>
+			</select>
+			<select name="s_test" onchange="javascript:console.log('test');" style="max-width: 100px;">
+				<optgroup disabled label="Test">
+					<option value="1">One</option>
+				</optgroup>
+				<optgroup label="Other">
+					<option selected value="2">Two</option>
+					<option value="3">Three long option</option>
+				</optgroup>
+			</select>
+			<select name="s_test222" multiple="multiple">
+				<option value="1">One</option>
+				<option selected value="2">Two</option>
+				<option value="3">Three long option</option>
+				<option value="4">Four</option>
+				<option value="5">Five</option>
+				<option value="6">Six</option>
+				<option value="7">Seven</option>
+				<option value="8">Eight</option>
+				<option value="9">Nine</option>
+				<option value="10">Ten</option>
+				<option value="11">Eleven</option>
+			</select>
+			<select class="destroy" name="s_test" style="max-width: 100px;">
+				<optgroup disabled label="Test">
+					<option value="1">One</option>
+				</optgroup>
+				<optgroup label="Other">
+					<option selected value="2">Two</option>
+					<option value="3">Three long option</option>
+				</optgroup>
+			</select>
+			<select class="destroy" name="s_test222" multiple="multiple">
+				<option value="1">One</option>
+				<option selected value="2">Two</option>
+				<option value="3">Three long option</option>
+			</select>
+			<select class="sf-s-ignore" name="s_test" style="width: 100%;">
+				<optgroup disabled label="Test">
+					<option value="1">One</option>
+				</optgroup>
+				<optgroup label="Other">
+					<option selected value="2">Two</option>
+					<option value="3">Three long option</option>
+				</optgroup>
+			</select>
+			<select name="s_test" style="width: 100%;">
+				<optgroup disabled label="Test">
+					<option value="1">One</option>
+				</optgroup>
+				<optgroup label="Other">
+					<option selected value="2">Two</option>
+					<option value="3">Three long option</option>
+				</optgroup>
+			</select>
+			<select style="width: 100%;" name="s_test222" multiple="multiple">
+				<option value="1">One</option>
+				<option selected value="2">Two</option>
+				<option value="3">Three long option</option>
 			</select>
 			<br/>
 			<br/>

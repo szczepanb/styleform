@@ -13,6 +13,10 @@ $(function()
 			{
 				 error.insertAfter($("input[name='"+element.attr('name')+"']").last().closest('.sf-r-wrapper'));
 		    }
+			else if($(element).prop('tagName') === "SELECT"  === true && $(element).closest('.sf-s-wrapper'))
+			{
+				 error.insertAfter($(element).closest('.sf-s-wrapper'));
+		    }
 		    else {
 		        error.insertAfter(element);
 		    }
@@ -21,7 +25,11 @@ $(function()
 	
 	$(".styleform input[type='checkbox']").superCheckbox();
 	$(".styleform input[type='radio']").superRadio();
+	console.log($(".styleform select"));
+	$(".styleform select").superSelect();
+	$(".styleform select.destroy").superSelect('destroy');
 	
+	//$(".styleform input[type='checkbox']").superCheckbox('destroy')
 	//$(".styleform input[type='checkbox']").superCheckbox('destroy')
 	
 	//$(".styleform").superform();
