@@ -1,61 +1,49 @@
-$.widget( "SuperForm.superform", {
+$.widget( "SuperForm.superForm", {
 	options: {
         checkbox: {
 			use: true,
 			hover:false,
 			wrapClass: true,
-			inputClass: null,
 			wrapTitle: true,
-			ignoredClass:'sf-ch-ignored',
+			ignoredClass: "sf-ch-ignored",
+			errorClass: "error",
 			//calbacks
-			onEnter:null,
-			onLeave:null,
-			onChange:null,
-			onCreate:null,
-			onClick:null
+			onCreate:null
 		},
         radio: {
 			use: true,
 			hover:false,
-			disabled: false,
 			wrapClass: null,
-			inputClass: null,
 			wrapTitle: null,
-			ignoredClass:null,
+			ignoredClass: 'sf-r-ignored',
+			errorClass: 'error',
 			//calbacks
-			onEnter:null,
-			onLeave:null,
-			onChange:null,
-			onCreate:null,
-			onClick:null
+			onCreate:null
 		},
         select: {
 			use: true,
-			search: true,//czy pokazać wyszukiwarkę w select
+			hover:false,
+			classes:
+			{
+				'sf-s-wrapper': 'small'
+			},
+			search: 10,
 			lang:
 			{
-				placeholders:{
-					search: "Wyszukaj"
+				placeholders:
+				{
+					search: "Search"
 				},
-				no_results: "Brak wyników."
+				no_results: "No results."
 			},
-			//default select options
-			hover:false,
-			isClickable: true,
-			disabled: false,
 			wrapClass: null,
 			inputClass: null,
 			wrapTitle: null,
-			onlyClass: null,
-			ignoredClass:'sf-ignored-select',
-			minWidth: true,
-			maxListElement: 12,
+			ignoredClass: 'sf-s-ignore',
+			maxListElement: null,
+			window: true,
 			//calbacks
-			onEnter:null,
-			onLeave:null,
-			onChange:null,
-			onCreate:null,
-			onClick:null
+			onCreate:null
 		},
         fileUploader: {
 			use: true,
@@ -72,76 +60,50 @@ $.widget( "SuperForm.superform", {
     },
 	
     _create: function() {
-		var $this = this;
-		
+    	this.vars = {
+			observer: null
+    	};
+    	
+		this._initFormControls();
+		this._initObserver();
+    },
+    
+    _initFormControls: function()
+    {
+    	var $this = this;
 		var options = JSON.parse(JSON.stringify($this.options));
 		
 		if(options.checkbox.use)
 			$this.element.find('input[type="checkbox"]').superCheckbox(options.checkbox);
 		if(options.radio.use)
-			$this.element.find('input[type="radio"]').radioStyle(options.radio);
-		
-		if(options.select.use)
-		{	
-			$this.element.find('select').not('.sf-s-styled').each(function()
-			{
-				if($(this).hasClass('sf-s-initialized'))
-				{
-					$(this).selectStyle('destroy');
-				}
-
-				$(this).selectStyle(options.select);
-			});
-		}
-		
+			$this.element.find('input[type="radio"]').superRadio(options.radio);
+		if(options.select.use)	
+			$this.element.find('select').superSelect(options.select);
 		if(options.fileUploader.use)
 			$this.element.find('input[type="file"]').fileUploaderStyle(options.fileUploader);
-		
-		//To powinno być lepsze rozwiązanie dla 
-		$(document).off('domChange.'+$this.uuid).on('domChange.'+$this.uuid, function()
-		{
-			if(options.checkbox.use)
-			{
-//				$this.element.find('input.sf-ch-styled[type="checkbox"]').superCheckbox('update');
-			}
-			
-			if(options.checkbox.use)
-			{
-				$this.element.find('input[type="checkbox"]').not('.sf-ch-styled').superCheckbox(options.checkbox);
-			}
-			
-			if(options.radio.use)
-			{
-				$this.element.find('input[type="radio"]').not('.sf-r-styled').radioStyle(options.radio);
-			}
-			
-			if(options.select.use)
-			{			
-				$this.element.find('select').not('.sf-s-styled').not("."+$this.options.select.ignoredClass).each(function()
-				{
-					if($(this).hasClass('sf-s-initialized') && typeof($(this).data('SuperFormSelectStyle')) != 'undefined')
-						$(this).selectStyle('destroy');
-					
-					$(this).selectStyle(options.select);
-				});
-			}
-			
-			if(options.fileUploader.use)
-			{
-				$this.element.find('input[type="file"]').not('.sf-s-styled').fileUploaderStyle(options.fileUploader);
-			}
-		});
-		
-//		setInterval(function(){
-//			$(document).trigger('domChange.'+$this.uuid);
-//		}, 50);
-		
-		if(this.element.is('form'))
-			this._initValidationAdditionalEvent(this.element);
-		else
-			this._initValidationAdditionalEvent(this.element.find('form'));
     },
 	
+    _initObserver: function()
+    {
+    	var $this = this;
+		var $select = $this.element;
+    	
+    	callback = function(mutationList, observer)
+    	{
+    		console.log(1);
+    		$this._initFormControls();
+    	};
+    	
+    	var observerOptions = {
+		  childList: true,
+		  attributes: false,
+		  subtree: true
+		};
+    	
+    	$this.vars.observer = new MutationObserver(callback);
+    	$this.vars.observer.observe($this.element[0], observerOptions);
+    },
+    
 	_destroy: function(){
 		if(this.options.checkbox.use)
 			this.element.find('input[type="checkbox"]').superCheckbox("destroy");
@@ -152,42 +114,7 @@ $.widget( "SuperForm.superform", {
 		if(this.options.fileUploader.use)
 			this.element.find('input[type="file"]').fileUploaderStyle("destroy");
 	},
-	destroy:function(){this._destroy();this._super();},
-	_initValidationAdditionalEvent:function(form)
-	{
-		form.each(function()
-		{
-			$(this).off('submit.styleform').on('submit.styleform', function(){
-				var validator = $.data(this, "validator" );
-				
-				if(typeof validator !== "undefined")
-				{
-					$.each(validator.currentForm, function(i, error)
-					{
-						if($(error).hasClass(validator.settings.errorClass))
-						{
-							if($(error).is('select'))
-								$(error).closest('.sf-s-wrapper').addClass(validator.settings.errorClass);
-							else if($(error).is(':radio'))
-								$(error).closest('.sf-r-wrapper').addClass(validator.settings.errorClass);
-							else if($(error).is(':checkbox'))
-								$(error).closest('.sf-ch-wrapper').addClass(validator.settings.errorClass);
-						}
-						else
-						{
-							if($(error).is('select'))
-								$(error).closest('.sf-s-wrapper').removeClass(validator.settings.errorClass);
-							else if($(error).is(':radio'))
-								$(error).closest('.sf-r-wrapper').removeClass(validator.settings.errorClass);
-							else if($(error).is(':checkbox'))
-								$(error).closest('.sf-ch-wrapper').removeClass(validator.settings.errorClass);
-						}
-					});
-				}
-			});
-		});
-	},
-	initValidationAdditionalEvent:function(){this._initValidationAdditionalEvent($(this).find('form'));}
+	destroy:function(){this._destroy();this._super();}
 });
 
 var interval = null;
@@ -214,11 +141,7 @@ $.widget("SuperForm.superSelect", {
 		maxListElement: null,
 		window: true,
 		//calbacks
-		onEnter:null,
-		onLeave:null,
-		onChange:null,
-		onCreate:null,
-		onClick:null
+		onCreate:null
 	},
 	
     _create: function() {
@@ -231,12 +154,12 @@ $.widget("SuperForm.superSelect", {
     		menuUl: null,
     		menuSearch: null,
     		promise: null
-    	}
+    	};
     	
 		var $this = this;
 		var $select = $this.element;
 
-		if(!$select.prop('tagName') == 'select' || $select.hasClass($this.options.ignoredClass) || $select.hasClass('sf-s-styled'))
+		if(!$select.prop('tagName') === 'select' || $select.hasClass($this.options.ignoredClass) || $select.hasClass('sf-s-styled'))
 		{
 			return false;
 		}
@@ -247,10 +170,7 @@ $.widget("SuperForm.superSelect", {
 		{
 			$this._setMinWidth();
 		});
-//		$(window).on('load', function()
-//		{
-//			$this._setMinWidth();
-//		});
+
 		$this._initEvents();
 		$this._initObserver();
 		$this._update();
@@ -285,22 +205,23 @@ $.widget("SuperForm.superSelect", {
 		{
 			$select.addClass('sf-hide');
 		});
-		$this.vars.wrapper = $select.prop('tabindex', '-1').closest('.sf-s-wrapper'); 
+		$this.vars.wrapper = $select.closest('.sf-s-wrapper'); 
 		
-		if($select.prop('multiple') == true)
+		if($select.prop('multiple') === true)
 		{
-			$values = $select.val()
-			selected = $select.find('option:selected');
+			var $values = $select.val();
+			var selected = $select.find('option:selected');
 			$this.vars.wrapper.append('<div class="sf-s-multi-holder">').find('div.sf-s-multi-holder');
 			
 			var $holder = $this.vars.wrapper.find('.sf-s-multi-holder');
 			
 			$(selected).each(function(i, element)
 			{
-				elem = $(element)
-				html = $this._getOptionHtml(elem);
-				$content = $('<div class="sf-s-multi-element" data-value="'+elem.attr('value')+'"><span class="sf-s-multi-element-remover"></span><span class="sf-s-multi-element-content">'+html+'</span></div>');
+				var elem = $(element);
+				var html = $this._getOptionHtml(elem);
+				var $content = $('<div class="sf-s-multi-element" data-value="'+elem.attr('value')+'"><span class="sf-s-multi-element-remover"></span><span class="sf-s-multi-element-content">'+html+'</span></div>');
 				$holder.append($content);
+				$this._initRemoveMultipleSelectedOpt($content);
 			});
 			
 			$this.vars.wrapper.data('selected', $values);
@@ -309,7 +230,7 @@ $.widget("SuperForm.superSelect", {
 		else
 		{
 			selected = $select.find('option:selected');
-			html = $this._getOptionHtml(selected);
+			var html = $this._getOptionHtml(selected);
 			$this.vars.wrapper.append('<p class="sf-s-holder">').find('p.sf-s-holder')
 				.append('<span class="sf-s-selected"></span><span class="sf-s-button"></span>').find('.sf-s-selected').html(html);
 		}
@@ -329,7 +250,7 @@ $.widget("SuperForm.superSelect", {
 		var $this = this;
 		$this.element = this.element;
 		
-		$this.vars.menu = $('<div id="sf-s-list-'+$this.uuid+'" class="sf-s-list-wrap-absolute"><div class="sf-s-list sf-hide-opacity"><ul class="sf-s-list-inner"></ul></div></div>')
+		$this.vars.menu = $('<div id="sf-s-list-'+$this.uuid+'" class="sf-s-list-wrap-absolute"><div class="sf-s-list sf-hide-opacity"><ul class="sf-s-list-inner"></ul></div></div>');
 		$this.vars.menuUlWrap = $this.vars.menu.find('.sf-s-list');
 		$this.vars.menuUl = $this.vars.menu.find('ul.sf-s-list-inner');
 		
@@ -338,15 +259,15 @@ $.widget("SuperForm.superSelect", {
 		$this.element.children('option, optgroup').each(function(iteration, element)
 		{
 			var $thisO = $(this);
-			if($thisO.prop('tagName') == 'OPTION')
+			if($thisO.prop('tagName') === 'OPTION')
 			{
 				var is_selected = '', is_disabled = '';
 				var html = $this._getOptionHtml($thisO);
 				
-				if($thisO.prop('selected') == true)
+				if($thisO.prop('selected') === true)
 				{
 					is_selected = ' sf-s-active sf-s-hover';
-					if($this.vars.wrapper != null)
+					if($this.vars.wrapper !== null)
 						$this.vars.wrapper.find('p.sf-s-holder .sf-s-selected').html(html);
 				}
 				
@@ -356,7 +277,7 @@ $.widget("SuperForm.superSelect", {
 				}
 				
 				var optionAdded = $('<li class="sf-s-default'+is_selected+is_disabled+'" data-value="'+$thisO.val()+'">'+html+'</li>').appendTo($this.vars.menuUl);
-				if(typeof($thisO.attr('class')) != 'undefined')
+				if(typeof($thisO.attr('class')) !== 'undefined')
 				{
 					optionAdded.addClass($thisO.attr('class'));
 				}
@@ -367,9 +288,9 @@ $.widget("SuperForm.superSelect", {
 				var $wrap = $('<li class="sf-s-optgroup" data-index="'+$thisO.index()+'"><ul class="sf-s-optgroup-list"></ul></li>');
 				if($thisO.attr('label').length > 0)
 				{
-					$groupDisabled = $thisO.prop('disabled');
+					var $groupDisabled = $thisO.prop('disabled');
 					
-					if($groupDisabled == true)
+					if($groupDisabled === true)
 					{
 						is_disabled = ' sf-s-opt-group-disabled';
 					}
@@ -384,19 +305,19 @@ $.widget("SuperForm.superSelect", {
 					var is_selected = '', is_disabled = '';
 					var html = $this._getOptionHtml($thisOI);
 					
-					if($thisOI.prop('selected') == true)
+					if($thisOI.prop('selected') === true)
 					{
 						is_selected = ' sf-s-active sf-s-hover';
 						$this.element.closest('.sf-s-wrapper').find('p.sf-s-holder .sf-s-selected').html(html);
 					}
 					
-					if($thisOI.prop('disabled') == true || $thisO.prop('disabled') == true)
+					if($thisOI.prop('disabled') === true || $thisO.prop('disabled') === true)
 					{
 						is_disabled = ' sf-s-option-disabled';
 					}
 					
 					var optionAdded = $('<li class="sf-s-default'+is_selected+is_disabled+'" data-value="'+$thisOI.val()+'">'+html+'</li>').appendTo($wrap.find('ul.sf-s-optgroup-list'));
-					if(typeof($thisOI.attr('class')) != 'undefined')
+					if(typeof($thisOI.attr('class')) !== 'undefined')
 					{
 						optionAdded.addClass($thisOI.attr('class'));
 					}
@@ -453,9 +374,9 @@ $.widget("SuperForm.superSelect", {
 		var $this = this;
 		var $select = $this.element;
 		
-		if($select.prop('disabled') != true)
+		if($select.prop('disabled') !== true)
 		{
-			if($this.vars.wrapper != null)
+			if($this.vars.wrapper !== null)
 			{
 				$this.vars.wrapper.
 				off('focus.'+this.eventNamespace).on('focus.'+this.eventNamespace, function(event)
@@ -470,7 +391,7 @@ $.widget("SuperForm.superSelect", {
 				});
 			}
 			
-			if($this.vars.menu != null)
+			if($this.vars.menu !== null)
 			{
 				$this.vars.menu.off('click.'+this.eventNamespace).on('click.'+this.eventNamespace, function(event)
 				{
@@ -506,7 +427,7 @@ $.widget("SuperForm.superSelect", {
 							if($this._isMultiple())
 							{
 								var option = $select.find('option[value="'+$(this).data('value')+'"]');
-								if(option.prop('selected') == false)
+								if(option.prop('selected') === false)
 									option.prop('selected', true);
 								else
 									option.prop('selected', false);
@@ -526,7 +447,6 @@ $.widget("SuperForm.superSelect", {
 							$this._change();
 							$this._setUpList();
 							$select.trigger('mousedown').trigger('input').trigger('change').trigger('click');
-							$this._trigger( "onChange", null, $select);
 							$this._focusSelectWrapper();
 							$this._close();
 						}
@@ -539,7 +459,7 @@ $.widget("SuperForm.superSelect", {
 			
 			this._addKeyboardEvent();
 			
-			if($this.vars.wrapper != null)
+			if($this.vars.wrapper !== null)
 			{
 				$this.vars.wrapper.find('p.sf-s-holder,div.sf-s-multi-holder')
 				.off('click.'+this.eventNamespace).on('click.'+this.eventNamespace,function(event)
@@ -555,13 +475,14 @@ $.widget("SuperForm.superSelect", {
 				{
 					if($this.options.hover)
 					{
-						if($select.prop('disabled') == true)
-							return false;
-						
-						$(this).addClass('sf-s-hover');
+						if($select.prop('disabled') !== true)
+							$(this).addClass('sf-s-hover');
 					}
 					
-					$select.trigger(event);
+					if(typeof($._data($select[0], "events")[event.type]) !== 'undefined')
+					{
+						$select.trigger(event);
+					}
 				})
 				.off('mouseleave.'+this.eventNamespace).on('mouseleave.'+this.eventNamespace, function(event)
 				{
@@ -570,19 +491,31 @@ $.widget("SuperForm.superSelect", {
 						$(this).removeClass('sf-s-hover');
 					}
 					
-					$select.trigger(event);
+					if(typeof($._data($select[0], "events")[event.type]) !== 'undefined')
+					{
+						$select.trigger(event);
+					}
 				})
 				.off('mouseover.'+this.eventNamespace).on('mouseover.'+this.eventNamespace, function(event)
 				{
-					$select.trigger(event.type);
+					if(typeof($._data($select[0], "events")[event.type]) !== 'undefined')
+					{
+						$select.trigger(event.type);
+					}
 				})
 				.off('mouseout.'+this.eventNamespace).on('mouseout.'+this.eventNamespace, function(event)
 				{
-					$select.trigger(event.type);
+					if(typeof($._data($select[0], "events")[event.type]) !== 'undefined')
+					{
+						$select.trigger(event.type);
+					}
 				})
 				.off('mousemove.'+this.eventNamespace).on('mousemove.'+this.eventNamespace, function(event)
 				{
-					$select.trigger(event.type);
+					if(typeof($._data($select[0], "events")[event.type]) !== 'undefined')
+					{
+						$select.trigger(event.type);
+					}
 				});
 			}
 		}
@@ -595,7 +528,7 @@ $.widget("SuperForm.superSelect", {
     	
     	callback = function(mutationList, observer)
     	{
-    		if(['multiple', 'value'].indexOf(mutationList[0]['attributeName']) > -1 || mutationList[0]['type'] == 'childList')
+    		if(['multiple', 'value'].indexOf(mutationList[0]['attributeName']) > -1 || mutationList[0]['type'] === 'childList')
     		{
     			$this._destroy();
     			$this.element.superSelect($this.options);
@@ -608,7 +541,7 @@ $.widget("SuperForm.superSelect", {
 		  childList: true,
 		  attributes: true,
 		  subtree: true
-		}
+		};
     	
     	$this.vars.observer = new MutationObserver(callback);
     	$this.vars.observer.observe($this.element[0], observerOptions);
@@ -621,9 +554,9 @@ $.widget("SuperForm.superSelect", {
 		
 		$this._initAtributes();
 		
-		if($this.vars.wrapper != null)
+		if($this.vars.wrapper !== null)
 		{
-			if($select.prop('disabled') == true)
+			if($select.prop('disabled') === true)
 			{
 				$this.vars.wrapper.addClass('sf-s-disabled').prop("tabindex", "-1");
 			}
@@ -633,13 +566,13 @@ $.widget("SuperForm.superSelect", {
 			}
 		}
 		
-		if($this.vars.menu != null)
+		if($this.vars.menu !== null)
 		{
 			$select.find('optgroup').each(function()
 			{
-				$group = $this.vars.menuUl.find('.sf-s-optgroup[data-index="'+$(this).index()+'"]');
+				var $group = $this.vars.menuUl.find('.sf-s-optgroup[data-index="'+$(this).index()+'"]');
 				
-				if($(this).prop('disabled') == true)
+				if($(this).prop('disabled') === true)
 				{
 					$group.addClass('sf-s-opt-group-disabled').find('.sf-s-default').addClass('sf-s-option-disabled');
 				}
@@ -653,9 +586,9 @@ $.widget("SuperForm.superSelect", {
 		
 			$select.find('option').each(function()
 			{
-				$option = $this.vars.menuUl.find('.sf-s-default[data-value="'+$(this).val()+'"]');
+				var $option = $this.vars.menuUl.find('.sf-s-default[data-value="'+$(this).val()+'"]');
 				
-				if($(this).prop('disabled') == true || $(this).closest('optgroup:disabled').length > 0)
+				if($(this).prop('disabled') === true || $(this).closest('optgroup:disabled').length > 0)
 				{
 					$option.addClass('sf-s-option-disabled');
 				}
@@ -666,15 +599,15 @@ $.widget("SuperForm.superSelect", {
 			});
 		}
 		
-		if($select.prop('autofocus') == true)
+		if($select.prop('autofocus') === true)
 		{
-			if($this.vars.wrapper != null)
+			if($this.vars.wrapper !== null)
 				$this.vars.wrapper.focus();
 		}
 		
 		$this._change();
 		
-		if($this.vars.wrapper != null)
+		if($this.vars.wrapper !== null)
 		{
 			if($select.hasClass($this.options.errorClass))
 			{
@@ -689,7 +622,7 @@ $.widget("SuperForm.superSelect", {
 	
 	_isMultiple: function()
 	{
-		return this.element.prop('multiple') == true;
+		return this.element.prop('multiple') === true;
 	},
 	
 	_change: function()
@@ -697,24 +630,24 @@ $.widget("SuperForm.superSelect", {
 		var $this = this;
 		var $select = $this.element;
 		
-		if($this.vars.menu != null)
+		if($this.vars.menu !== null)
 		{
 			if($this._isMultiple())
 			{
-				$selectedValues = $this.vars.wrapper.data('selected');
-				$values = $select.val();
+				var $selectedValues = $this.vars.wrapper.data('selected');
+				var $values = $select.val();
 				
 				$.each($values, function(iteration, element)
 				{
 					if(typeof $selectedValues !== 'undefined' && $selectedValues.length)
 					{
-						index = $selectedValues.indexOf(element)
+						var index = $selectedValues.indexOf(element);
 						if(index < 0)
 						{
-							$selected = $this.vars.menuUl.find('.sf-s-default[data-value="'+element+'"]').addClass('sf-s-active');
-							html = $this._getOptionHtml($selected);
-							$content = $('<div class="sf-s-multi-element" data-value="'+element+'"><span class="sf-s-multi-element-remover"></span><span class="sf-s-multi-element-content">'+html+'</span></div>');
-							if(iteration == 0)
+							var $selected = $this.vars.menuUl.find('.sf-s-default[data-value="'+element+'"]').addClass('sf-s-active');
+							var html = $this._getOptionHtml($selected);
+							var $content = $('<div class="sf-s-multi-element" data-value="'+element+'"><span class="sf-s-multi-element-remover"></span><span class="sf-s-multi-element-content">'+html+'</span></div>');
+							if(iteration === 0)
 							{
 								$this.vars.wrapper.find('.sf-s-multi-holder .sf-s-multi-element').eq(iteration).before($content);
 							}
@@ -750,11 +683,11 @@ $.widget("SuperForm.superSelect", {
 			}
 			else
 			{
-				$value = $select.val();
+				var $value = $select.val();
 				
 				$this.vars.menuUl.find('.sf-s-default.sf-s-active').removeClass('sf-s-active');
-				$selected = $this.vars.menuUl.find('.sf-s-default[data-value="'+$value+'"]').addClass('sf-s-active');
-				html = $this._getOptionHtml($selected);
+				var $selected = $this.vars.menuUl.find('.sf-s-default[data-value="'+$value+'"]').addClass('sf-s-active');
+				var html = $this._getOptionHtml($selected);
 				$this.vars.wrapper.find('p.sf-s-holder .sf-s-selected').html(html);
 			}
 		}
@@ -767,12 +700,12 @@ $.widget("SuperForm.superSelect", {
 		
 		element.find('.sf-s-multi-element-remover').off('click.'+this.eventNamespace).on('click.'+this.eventNamespace, function(event)
 		{
-			$this._close();
-			$value = element.data('value');
+			var $value = element.data('value');
 			$select.find('option[value="'+$value+'"]').prop('selected', false);
 			$this.vars.menuUl.find('.sf-s-default[data-value="'+$value+'"]').removeClass('sf-s-active');
 			element.remove();
 			$this.vars.menuUl.data('selected', $select.val());
+			$this._close();
 			event.stopPropagation();
 			return false;
 		});
@@ -783,12 +716,12 @@ $.widget("SuperForm.superSelect", {
 		if(this.vars.observer)
 			this.vars.observer.disconnect();
 		
-		if(typeof(this.element) != 'undefined')
+		if(typeof(this.element) !== 'undefined')
 		{
 				this.element.removeClass('sf-hide');
 				this.element.removeData(this.widgetFullName);
 				this.element.off('.'+this.eventNamespace);
-				if(this.vars.menu != null)
+				if(this.vars.menu !== null)
 				{
 					this.vars.menu.remove();
 				}
@@ -812,32 +745,31 @@ $.widget("SuperForm.superSelect", {
 		
 		if($select.prop('multiple'))
 		{
-			style = $select.prop('style');
-			computedStyleWidth = null;
+			var style = $select.prop('style');
+			var computedStyleWidth = null;
 			requestAnimationFrame(function()
 			{
 				computedStyleWidth = window.getComputedStyle($select[0]).width;
 			});
 			
-			if(style.width.toString().length > 0 || style['maxWidth'].toString().length > 0 || (computedStyleWidth != 'auto' && computedStyleWidth != null))
+			if(style.width.toString().length > 0 || style['maxWidth'].toString().length > 0 || (computedStyleWidth !== 'auto' && computedStyleWidth !== null))
 			{
-				console.log($this.vars.wrapper);
-				if(style['maxWidth'].toString().length > 0)
-					var selectWidth = style['maxWidth'].toString();
-				else if(style.width.toString().length > 0)
-					var selectWidth = style.width.toString();
-				else
-					var selectWidth = computedStyleWidth;
-				
-				if($this.vars.wrapper != null)
+				if($this.vars.wrapper !== null)
 				{
+					var selectWidth = null;
+					if(style['maxWidth'].toString().length > 0)
+						selectWidth = style['maxWidth'].toString();
+					else if(style.width.toString().length > 0)
+						var selectWidth = style.width.toString();
+					else
+						var selectWidth = computedStyleWidth;
+					
 					$this.vars.wrapper.css('width', selectWidth);
 					selectWidth = $this.vars.wrapper.outerWidth();
 				}
 			}
 			else
 			{
-				console.log($this.vars.initialWidth);
 				$this.vars.wrapper.width($this.vars.initialWidth);
 			}
 		}
@@ -851,7 +783,7 @@ $.widget("SuperForm.superSelect", {
 				computedStyleWidth = window.getComputedStyle($select[0]).width;
 			});
 			
-			if(style.width.toString().length > 0 || style['maxWidth'].toString().length > 0 || computedStyleWidth != 'auto' && computedStyleWidth != null)
+			if(style.width.toString().length > 0 || style['maxWidth'].toString().length > 0 || computedStyleWidth !== 'auto' && computedStyleWidth !== null)
 			{
 				if(style['maxWidth'].toString().length > 0)
 				{
@@ -891,10 +823,10 @@ $.widget("SuperForm.superSelect", {
 		
 		$this.vars.menu.addClass('sf-show-visible');
 		
-		searchHeight = 0;
-		if($this.vars.menuSearch != null)
+		var searchHeight = 0;
+		if($this.vars.menuSearch !== null)
 		{
-			searchHeight = $this.vars.menuSearch.innerHeight()
+			searchHeight = $this.vars.menuSearch.innerHeight();
 			$this.vars.menuUlWrap.css('marginTop', searchHeight);
 		}
 		
@@ -913,6 +845,9 @@ $.widget("SuperForm.superSelect", {
 		
 		$this.vars.wrapper.removeClass('sf-s-to-top sf-s-to-right');
 		var positionClass = "";
+		var verticalAlignMy = "";
+		var verticalAlignAt = "";
+		
 		if(downHeight < listHeight)
 		{
             if(upHeight < listHeight)
@@ -963,7 +898,7 @@ $.widget("SuperForm.superSelect", {
 		
 		$this.vars.menu.removeClass('sf-show-visible').addClass('sf-show-visible-width');
 		
-		addHide = true;
+		var addHide = true;
 		if($this.vars.menuUlWrap.hasClass('sf-hide-opacity'))
 		{
 			$this.vars.menuUlWrap.removeClass('sf-hide-opacity');
@@ -973,25 +908,26 @@ $.widget("SuperForm.superSelect", {
 			addHide = false;
 		}
 		
-		minWidthList = $this.vars.menuUlWrap.outerWidth(true);
+		var minWidthList = $this.vars.menuUlWrap.outerWidth(true);
 		
 		$this.vars.menu.addClass('sf-show-visible').removeClass('sf-show-visible-width');
 		
-		selectWidth = $this.vars.wrapper.outerWidth(true);
+		var selectWidth = $this.vars.wrapper.outerWidth(true);
 		
 		if(minWidthList > selectWidth)
 			$this.vars.menuUlWrap.css('width', minWidthList);
 		else
 			$this.vars.menuUlWrap.css('width', selectWidth);
 		
+		var horizontalAlign = "";
 		if($this.vars.wrapper.offset().left+$this.vars.menu.outerWidth(true) > $('body').width())
 		{
 			horizontalAlign = "right";
 			positionClass += ' sf-s-to-right';
 			
-			bodyWidth = $('body').width();
-			outerWidthWrapper = $this.vars.wrapper.outerWidth(true);
-			delta = bodyWidth-(bodyWidth-$this.vars.wrapper.offset().left-outerWidthWrapper)-($this.vars.menu.outerWidth(true));
+			var bodyWidth = $('body').width();
+			var outerWidthWrapper = $this.vars.wrapper.outerWidth(true);
+			var delta = bodyWidth-(bodyWidth-$this.vars.wrapper.offset().left-outerWidthWrapper)-($this.vars.menu.outerWidth(true));
 			if(delta < 1)
 			{
 				horizontalAlign = "left-"+(Math.abs((delta)/2));
@@ -1008,8 +944,8 @@ $.widget("SuperForm.superSelect", {
 			'of': $this.vars.wrapper
 		}).addClass(positionClass);
 		
-		zIndex = $this.vars.menu.css('z-index');
-		if(zIndex == 'auto')
+		var zIndex = $this.vars.menu.css('z-index');
+		if(zIndex === 'auto')
 			zIndex = 0;
 		
 		$this.vars.wrapper.css('z-index', zIndex+1).addClass(positionClass);
@@ -1026,12 +962,12 @@ $.widget("SuperForm.superSelect", {
 	{
 		var $this = this;
 		var $select = $this.element;
-		if($this.vars.menu != null)
+		if($this.vars.menu !== null)
 		{
 			$this.vars.menuSearch = $('<div class="sf-s-search-input"><input type="text" placeholder="'+$this.options.lang.placeholders.search+'"></div>');
 			$this.vars.menuUlWrap.prepend($this.vars.menuSearch);
 			
-			if($this.vars.wrapper != null)
+			if($this.vars.wrapper !== null)
 			{
 				$this.vars.wrapper.find('p.sf-s-holder,div.sf-s-multi-holder').off('click.sf_select_search').on('click.sf_select_search', function(){
 					$this.vars.menuSearch.find('input').focus();
@@ -1075,9 +1011,9 @@ $.widget("SuperForm.superSelect", {
 					$this.vars.menuUl.find('.sf-s-default.sf-s-default-last-child').removeClass('sf-s-default-last-child');
 					$this.vars.menuUl.find('.sf-s-default:visible:last').addClass('sf-s-default-last-child');
 					
-					if($this.vars.menuUl.find('.sf-s-default:visible').length == 0)
+					if($this.vars.menuUl.find('.sf-s-default:visible').length === 0)
 					{
-						if($this.vars.menuUlWrap.find('.sf-s-no-results').length == 0)
+						if($this.vars.menuUlWrap.find('.sf-s-no-results').length === 0)
 							$this.vars.menuUlWrap.append('<li class="sf-s-no-results" style=""><input disabled="" value="" type="hidden">'+$this.options.lang.no_results+'</li>');
 					}
 					else {
@@ -1101,14 +1037,14 @@ $.widget("SuperForm.superSelect", {
 		
 		var ar = new Array(33,34,35,36,37,38,39,40);
 		
-		if($this.vars.wrapper != null)
+		if($this.vars.wrapper !== null)
 		{
 			$this.vars.wrapper.off('keyup'+this.eventNamespace).on('keyup'+this.eventNamespace, function(e)
 			{
 				$this._initRenderMenu();
 				
-				var code = e.keyCode || e.which;
-				if(code == '38' || code == '37')
+				var code = e.keyCode.toString() || e.which.toString();
+				if(code === '38' || code === '37')
 				{
 					if($this._isMultiple())
 					{
@@ -1133,7 +1069,7 @@ $.widget("SuperForm.superSelect", {
 					{
 						if($prev.length > 0)
 						{
-							selected = $select.val();
+							var selected = $select.val();
 							selected.push($prev.data('value'));
 							
 							$select.val(selected);
@@ -1158,7 +1094,7 @@ $.widget("SuperForm.superSelect", {
 						$this.vars.promise = function(){
 							$this.vars.promise = null;
 							$select.trigger('mousedown').trigger('input').trigger('change').trigger('click').trigger('blur');
-						}
+						};
 					}
 					else
 					{
@@ -1169,7 +1105,7 @@ $.widget("SuperForm.superSelect", {
 					$this.vars.menuUlWrap.scrollTop($toScrollElement.outerHeight(true)*$toScrollElement.index());
 					
 				}
-				else if(code == '40' || code == '39')
+				else if(code === '40' || code === '39')
 				{
 					var multi = false;
 					if($this._isMultiple())
@@ -1218,21 +1154,21 @@ $.widget("SuperForm.superSelect", {
 						$this.vars.promise = function(){
 							$this.vars.promise = null;
 							$select.trigger('mousedown').trigger('input').trigger('change').trigger('click').trigger('blur');
-						}
+						};
 					}
 					else
 					{
 						$select.trigger('change');
 					}
 					
-					var $toScrollElement = $this.vars.menuUl.find('.sf-s-active')
+					var $toScrollElement = $this.vars.menuUl.find('.sf-s-active');
 					$this.vars.menuUlWrap.scrollTop($toScrollElement.outerHeight(true)*$toScrollElement.index());
 				}
-				else if(code == '32' || code == '13')
+				else if(code === '32' || code === '13')
 				{
 					if($select.hasClass('sf-s-list-is-open'))
 					{
-						if(code == '13')
+						if(code === '13')
 						{
 							$select.trigger('input').trigger('change').trigger('keyup');
 							$this._close();
@@ -1266,7 +1202,7 @@ $.widget("SuperForm.superSelect", {
 							{
 								if($(elem).hasClass('sf-s-active'))
 								{
-									if(index == $elements.length-1)
+									if(index === $elements.length-1)
 									{
 										
 										$select.val($elements.first().data('value'));
@@ -1292,7 +1228,7 @@ $.widget("SuperForm.superSelect", {
 								$this.vars.promise = function(){
 									$this.vars.promise = null;
 									$select.trigger('mousedown').trigger('input').trigger('change').trigger('click').trigger('blur');
-								}
+								};
 							}
 							else
 							{
@@ -1322,7 +1258,7 @@ $.widget("SuperForm.superSelect", {
 		}
 		
 		window.addEventListener('keydown', function(e) {
-			if(e.keyCode == 32 && e.target == $this.vars.wrapper[0]) {
+			if(e.keyCode === 32 && e.target === $this.vars.wrapper[0]) {
 				e.preventDefault();
 			}
 		});
@@ -1338,7 +1274,7 @@ $.widget("SuperForm.superSelect", {
 	
 	_initRenderMenu: function()
 	{
-		if(this.vars.menu == null)
+		if(this.vars.menu === null)
 		{
 			this._renderMenu();
 			this._initEvents();
@@ -1355,7 +1291,7 @@ $.widget("SuperForm.superSelect", {
 		
 		$this._initRenderMenu();
 		
-		if($select.hasClass('sf-s-list-is-open') || $select.prop('disabled') == true)
+		if($select.hasClass('sf-s-list-is-open') || $select.prop('disabled') === true)
 			return false;
 		
 		this._setUpList();
@@ -1395,7 +1331,7 @@ $.widget("SuperForm.superSelect", {
 		$('html').on('click.'+this.eventNamespace, function()
 		{
 			$this._close();
-		})
+		});
 		
 		$(this).addClass('sf-s-hover');
 		
@@ -1432,7 +1368,7 @@ $.widget("SuperForm.superSelect", {
 		$this.vars.menuUlWrap.addClass('sf-hide-opacity');
 		
 	},
-	close:function(){this._close();},
+	close:function(){this._close();}
 });
 
 $.widget("SuperForm.superRadio", {
@@ -1445,11 +1381,7 @@ $.widget("SuperForm.superRadio", {
 		ignoredClass: 'sf-r-ignored',
 		errorClass: 'error',
 		//calbacks
-		onEnter:null,
-		onLeave:null,
-		onChange:null,
-		onCreate:null,
-		onClick:null
+		onCreate:null
 	},
 	
     _create: function() {
@@ -1500,11 +1432,11 @@ $.widget("SuperForm.superRadio", {
 			}
 			else
 			{
-				$this.vars.old = 'empty'
+				$this.vars.old = 'empty';
 				$input.wrap('<div class="sf-r-wrapper"><label class="sf-r-only-radio">');
 			}
 			
-			if(typeof($input.attr('style')) != 'undefined')
+			if(typeof($input.attr('style')) !== 'undefined')
 				$input.closest('.sf-r-wrapper').attr('style', $input.attr('style'));
 			
 			$input.closest('.sf-r-wrapper label').prepend('<span tabindex="0" class="sf-r-default"><span></span></span>');
@@ -1554,16 +1486,14 @@ $.widget("SuperForm.superRadio", {
     	var $this = this;
 		var $input = $this.element;
 		
-		$input.off('change.sf-radio').on('change.sf-radio', function(){
+		$input.off('change.'+this.eventNamespace).on('change.'+this.eventNamespace, function(){
 			if($input.prop('disabled') !== true)
 			{
-				$this._trigger( "onClick", null, $input);
 				$this._change();
-				$this._trigger( "onChange", null, $input);
 			}
 		});
 		
-		$input.closest('label').find('.sf-r-default').off('keydown.sf_radio').on('keydown.sf_radio', function(event)
+		$input.closest('label').find('.sf-r-default').off('keydown.'+this.eventNamespace).on('keydown.'+this.eventNamespace, function(event)
 		{
 			if(this === document.activeElement)
 			{
@@ -1581,13 +1511,35 @@ $.widget("SuperForm.superRadio", {
 				default: break;
 				}
 			}
+		})
+		.off('keyup.'+this.eventNamespace).on('keyup.'+this.eventNamespace, function(event)
+		{
+			if(typeof($._data($input[0], "events")[event.type]) !== 'undefined')
+			{
+				$input.trigger(event);
+			}
+		})
+		.off('keypress.'+this.eventNamespace).on('keypress.'+this.eventNamespace, function(event)
+		{
+			if(typeof($._data($input[0], "events")[event.type]) !== 'undefined')
+			{
+				$input.trigger(event);
+			}
+		})
+		.off('dblclick.'+this.eventNamespace).on('dblclick.'+this.eventNamespace, function(event)
+		{
+			if(typeof($._data($input[0], "events")[event.type]) !== 'undefined')
+			{
+				$input.trigger(event.type);
+			}
+			event.stopPropagation();
 		});
 		
-		$input.closest('label').find('a').off('click.sf_radio').on('click.sf_radio', function(e)
+		$input.closest('label').find('a').off('click.'+this.eventNamespace).on('click.'+this.eventNamespace, function(e)
 		{
 			if($input.prop('disabled') !== true)
 			{
-				if($(this).attr('target') == '_blank')
+				if($(this).attr('target') === '_blank')
                     window.open($(this).attr('href'));
                 else
                     window.location.href = $(this).attr('href');
@@ -1597,24 +1549,59 @@ $.widget("SuperForm.superRadio", {
 			e.stopPropagation();
 		});
 		
-		if($input.data().hover === true || $this.options.hover)
+		$input.closest('.sf-r-wrapper').off('mouseenter.'+this.eventNamespace).on('mouseenter.'+this.eventNamespace, function(event)
 		{
-			$input.closest('.sf-r-wrapper').off('mouseenter.sf_radio').on('mouseenter.sf_radio', function(event)
+			if($this.options.hover)
 			{
-				if($input.prop('disabled') != true)
-				{
+				if($input.prop('disabled') !== true)
 					$(this).addClass('sf-r-hover');
-					$this._trigger( "onEnter", event, $input);
-				}
-			}).off('mouseleave.sf_radio').on('mouseleave.sf_radio', function(event)
+			}
+			
+			if(typeof($._data($input[0], "events")[event.type]) !== 'undefined')
 			{
-				if($input.prop('disabled') != true)
-				{
-					$(this).removeClass('sf-r-hover');
-					$this._trigger( "onLeave", event, $input);
-				}
-			});
-		}
+				$input.trigger(event);
+			}
+			
+			event.stopPropagation();
+		})
+		.off('mouseleave.'+this.eventNamespace).on('mouseleave.'+this.eventNamespace, function(event)
+		{
+			if($this.options.hover)
+			{
+				$(this).removeClass('sf-r-hover');
+			}
+			
+			if(typeof($._data($input[0], "events")[event.type]) !== 'undefined')
+			{
+				$input.trigger(event);
+			}
+			event.stopPropagation();
+		})
+		.off('mouseover.'+this.eventNamespace).on('mouseover.'+this.eventNamespace, function(event)
+		{
+			if(typeof($._data($input[0], "events")[event.type]) !== 'undefined')
+			{
+				$input.trigger(event.type);
+			}
+			event.stopPropagation();
+		})
+		.off('mouseout.'+this.eventNamespace).on('mouseout.'+this.eventNamespace, function(event)
+		{
+			if(typeof($._data($input[0], "events")[event.type]) !== 'undefined')
+			{
+				$input.trigger(event.type);
+			}
+			event.stopPropagation();
+		})
+		.off('mousemove.'+this.eventNamespace).on('mousemove.'+this.eventNamespace, function(event)
+		{
+			if(typeof($._data($input[0], "events")[event.type]) !== 'undefined')
+			{
+				$input.trigger(event.type);
+			}
+			event.stopPropagation();
+		});
+
     },
     
     _initObserver: function()
@@ -1631,7 +1618,7 @@ $.widget("SuperForm.superRadio", {
 		  childList: true,
 		  attributes: true,
 		  subtree: true
-		}
+		};
     	
     	$this.vars.observer = new MutationObserver(callback);
     	$this.vars.observer.observe($this.element[0], observerOptions);
@@ -1644,7 +1631,7 @@ $.widget("SuperForm.superRadio", {
 		
 		$this._initAtributes();
 		
-		if($input.prop('disabled') == true)
+		if($input.prop('disabled') === true)
 		{
 			$input.closest('.sf-r-wrapper').addClass('sf-r-disabled').find('.sf-r-default').prop("tabindex", "-1");
 			
@@ -1671,9 +1658,9 @@ $.widget("SuperForm.superRadio", {
 		var $this = this;
 		var $input = $this.element;
 		
-		if($input.prop('checked') == true)
+		if($input.prop('checked') === true)
 		{
-			$('input.sf-ri-clicked[name="'+$input.attr('name')+'"]').closest('.sf-r-wrapper').removeClass('sf-r-clicked')
+			$('input.sf-ri-clicked[name="'+$input.attr('name')+'"]').closest('.sf-r-wrapper').removeClass('sf-r-clicked');
 			$input.addClass('sf-ri-clicked').closest('.sf-r-wrapper').addClass('sf-r-clicked');
 		}
 		else
@@ -1733,12 +1720,7 @@ $.widget("SuperForm.superCheckbox", {
 		ignoredClass: "sf-ch-ignored",
 		errorClass: "error",
 		//calbacks
-		onEnter:null,
-		onLeave:null,
-		onChange:null,
-		onCreate:null,
-		onClick:null,
-		proxy: null
+		onCreate:null
 	},
 	
     _create: function() {
@@ -1778,7 +1760,7 @@ $.widget("SuperForm.superCheckbox", {
 			}
 			else if(typeof($input.attr('id')) !== 'undefined')
 			{
-				var element = $('label[for="'+$input.attr('id')+'"]')
+				var element = $('label[for="'+$input.attr('id')+'"]');
 				if(element)
 				{
 					$this.vars.old = 'outside';
@@ -1794,7 +1776,7 @@ $.widget("SuperForm.superCheckbox", {
 			
 			$input;
 			
-			if(typeof($input.attr('style')) != 'undefined')
+			if(typeof($input.attr('style')) !== 'undefined')
 				$input.closest('.sf-ch-wrapper').attr('style', $input.attr('style'));
 			
 			$input.closest('.sf-ch-wrapper label').prepend('<span tabindex="0" class="sf-ch-default">');
@@ -1845,20 +1827,18 @@ $.widget("SuperForm.superCheckbox", {
     	var $this = this;
 		var $input = $this.element;
 
-		$input.off('change.sf-checkbox').on('change.sf-checkbox', function(){
+		$input.off('change.'+this.eventNamespace).on('change.'+this.eventNamespace, function(){
 			if($input.prop('disabled') !== true)
 			{
-				$this._trigger( "onClick", null, $input);
 				$this._change();
-				$this._trigger( "onChange", null, $input);
 			}
 		});
 
-		$input.closest('.label').find('a').off('click.sf_anchors_checkbox').on('click.sf_anchors_checkbox', function(e)
+		$input.closest('.label').find('a').off('click.'+this.eventNamespace).on('click.'+this.eventNamespace, function(e)
 		{
 			if(!$input.prop('disabled') !== true)
 			{
-				if($(this).attr('target') == '_blank')
+				if($(this).attr('target') === '_blank')
 					window.open($(this).attr('href'));
 				else
 					window.location.href = $(this).attr('href');
@@ -1868,8 +1848,13 @@ $.widget("SuperForm.superCheckbox", {
 			e.stopPropagation();
 		});
 		
-		$input.closest('label').find('.sf-ch-default').off('keydown.sf_checkbox').on('keydown.sf_checkbox', function(event)
+		$input.closest('label').find('.sf-ch-default').off('keydown.'+this.eventNamespace).on('keydown.'+this.eventNamespace, function(event)
 		{
+			if(typeof($._data($input[0], "events")[event.type]) !== 'undefined')
+			{
+				$input.trigger(event);
+			}
+			
 			if(this === document.activeElement)
 			{
 				switch ( event.keyCode ) {
@@ -1878,34 +1863,91 @@ $.widget("SuperForm.superCheckbox", {
 						event.preventDefault();
 						break;
 				case 13:	
-					if($(this).closest('form').length)
-						$(this).closest('form').submit();
+					if(this.form.length)
+						this.form.submit();
 					return false;
 					break;
 				default: break;
 				}
 			}
+		})
+		.off('keyup.'+this.eventNamespace).on('keyup.'+this.eventNamespace, function(event)
+		{
+			if(typeof($._data($input[0], "events")[event.type]) !== 'undefined')
+			{
+				$input.trigger(event);
+			}
+		})
+		.off('keypress.'+this.eventNamespace).on('keypress.'+this.eventNamespace, function(event)
+		{
+			if(typeof($._data($input[0], "events")[event.type]) !== 'undefined')
+			{
+				$input.trigger(event);
+			}
+		})
+		.off('dblclick.'+this.eventNamespace).on('dblclick.'+this.eventNamespace, function(event)
+		{
+			if(typeof($._data($input[0], "events")[event.type]) !== 'undefined')
+			{
+				$input.trigger(event.type);
+			}
+			event.stopPropagation();
 		});
 		
-		if($input.data().hover === true || $this.options.hover)
+		
+		$input.closest('.sf-ch-wrapper')
+		.off('mouseenter.'+this.eventNamespace).on('mouseenter.'+this.eventNamespace, function(event)
 		{
-			$input.closest('.sf-ch-wrapper').off('mouseenter.sf_checkbox').on('mouseenter.sf_checkbox', function(event)
+			if($this.options.hover)
 			{
 				if($input.prop('disabled') !== true)
-				{
 					$(this).addClass('sf-ch-hover');
-					$this._trigger( "onEnter", event, $input);
-				}
-			})
-			.off('mouseleave.sf_checkbox').on('mouseleave.sf_checkbox', function(event)
+			}
+			
+			if(typeof($._data($input[0], "events")[event.type]) !== 'undefined')
 			{
-				if($input.prop('disabled') !== true)
-				{
-					$(this).removeClass('sf-ch-hover');
-					$this._trigger( "onLeave", event, $input);
-				}
-			});
-		}
+				$input.trigger(event);
+			}
+			
+			event.stopPropagation();
+		})
+		.off('mouseleave.'+this.eventNamespace).on('mouseleave.'+this.eventNamespace, function(event)
+		{
+			if($this.options.hover)
+			{
+				$(this).removeClass('sf-ch-hover');
+			}
+			
+			if(typeof($._data($input[0], "events")[event.type]) !== 'undefined')
+			{
+				$input.trigger(event);
+			}
+			event.stopPropagation();
+		})
+		.off('mouseover.'+this.eventNamespace).on('mouseover.'+this.eventNamespace, function(event)
+		{
+			if(typeof($._data($input[0], "events")[event.type]) !== 'undefined')
+			{
+				$input.trigger(event.type);
+			}
+			event.stopPropagation();
+		})
+		.off('mouseout.'+this.eventNamespace).on('mouseout.'+this.eventNamespace, function(event)
+		{
+			if(typeof($._data($input[0], "events")[event.type]) !== 'undefined')
+			{
+				$input.trigger(event.type);
+			}
+			event.stopPropagation();
+		})
+		.off('mousemove.'+this.eventNamespace).on('mousemove.'+this.eventNamespace, function(event)
+		{
+			if(typeof($._data($input[0], "events")[event.type]) !== 'undefined')
+			{
+				$input.trigger(event.type);
+			}
+			event.stopPropagation();
+		});
     },
     
     _initObserver: function()
@@ -1922,7 +1964,7 @@ $.widget("SuperForm.superCheckbox", {
 		  childList: true,
 		  attributes: true,
 		  subtree: true
-		}
+		};
     	
     	$this.vars.observer = new MutationObserver(callback);
     	$this.vars.observer.observe($this.element[0], observerOptions);
@@ -1937,11 +1979,11 @@ $.widget("SuperForm.superCheckbox", {
 		
 		if($input.prop('disabled') === true)
 		{
-			$input.closest('.sf-ch-wrapper').addClass('sf-ch-disabled');
+			$input.closest('.sf-ch-wrapper').addClass('sf-ch-disabled').find('.sf-ch-default').attr('tabindex', '-1');
 		}
 		else
 		{
-			$input.closest('.sf-ch-wrapper').removeClass('sf-ch-disabled');
+			$input.closest('.sf-ch-wrapper').removeClass('sf-ch-disabled').find('.sf-ch-default').attr('tabindex', '0');
 		}
 		
 		$this._change();
@@ -2013,7 +2055,6 @@ $.widget("SuperForm.superCheckbox", {
 });
 
 $.widget( "SuperForm.fileUploaderStyle", {
-	
 	options: {
 		ignoredClass:null,
 		class:{
