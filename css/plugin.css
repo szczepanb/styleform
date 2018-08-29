@@ -4,6 +4,7 @@
 {
 	display: inline-block;
 	vertical-align: middle;
+	cursor: pointer;
 }
 
 .sf-ch-wrapper label, .sf-ch-wrapper label b
@@ -72,8 +73,8 @@
 	top: 2px;
 	bottom: 0;
 	margin: auto;
-	width: 24px;
-	height: 24px;
+	width: 22px;
+	height: 22px;
 	color: #6dcaf3;
 	-webkit-transition: all 300ms ease-in-out;
     -moz-transition: all 300ms ease-in-out;
@@ -98,7 +99,7 @@
 
 .sf-ch-default span:before
 {
-	content: "done"
+	content: "\e876"
 }
 
 .sf-ch-clicked .sf-ch-default span
@@ -157,6 +158,11 @@
 	box-sizing: border-box;
 }
 
+.sf-r-only-radio .sf-r-default
+{
+	margin-right: 0;
+}
+
 .sf-r-wrapper.error .sf-r-default
 {
 	border:1px solid #cb0000;
@@ -204,17 +210,13 @@
 	max-width: 100%;
 }
 
-.sf-s-wrapper.sf-s-disabled .sf-s-holder
+.sf-s-wrapper.sf-s-disabled .sf-s-holder,
+.sf-s-wrapper.sf-s-disabled .sf-s-multi-holder
 {
 	background: #f0f0f0;
 }
 
-.sf-s-wrapper.f-error a.sf-r-default
-{
-	border: 1px solid #cb1111;
-}
-
-.sf-s-wrapper.f-error a.sf-ch-default
+.sf-s-wrapper.f-error
 {
 	border: 1px solid #cb1111;
 }
@@ -236,7 +238,6 @@
 {
 	display: none;
 }
-
 
 .sf-s-search-input input
 {
@@ -283,7 +284,6 @@
 	box-sizing: border-box;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-/*	overflow: hidden;*/
 	background: #ffffff;
 	text-align: left;
 	padding: 0 38px 0 12px;
@@ -357,12 +357,8 @@
 	top: 0;
 }
 
-/* .sf-s-to-top .sf-s-holder.sf-s-list-open */
-/* { */
-/* 	border: 1px solid #2f6dc9; */
-/* } */
 
-body .sf-s-holder .sf-s-selected
+.sf-s-holder .sf-s-selected
 {
 	color: #505050;
 	font-size: 13px;
@@ -381,7 +377,7 @@ body .sf-s-holder .sf-s-selected
 	outline: none;
 }
 
-body .sf-s-holder .sf-s-selected:hover
+.sf-s-holder .sf-s-selected:hover
 {
 	text-decoration: none;
 }
@@ -438,8 +434,6 @@ body .sf-s-holder .sf-s-selected:hover
 	padding: 0;
 	background: #ffffff;
 	margin:0;
-/* 	position: absolute; */
-/* 	top:37px; */
 	margin-top:-1px;
 	box-sizing: border-box;
 	list-style: none;
@@ -579,11 +573,6 @@ body .sf-s-holder .sf-s-selected:hover
 	overflow-y: scroll;
 }
 
-.sf-s-focus .sf-s-holder
-{
-	border: 1px solid #2F6DC9;
-}
-
 .sf-hide
 {
 	display: none !important;
@@ -621,45 +610,6 @@ body .sf-s-holder .sf-s-selected:hover
 {
 	visibility: visible;
 }
-
-.usf-datepicker-title .sf-s-wrapper .sf-s-holder
-{
-	height: 21px;
-	padding: 0 28px 0 8px;
-}
-
-body .usf-datepicker-title .sf-s-wrapper .sf-s-holder a
-{
-	font-size: 12px;
-	margin-top: -4px;
-}
-
-.usf-datepicker-title .sf-s-button
-{
-	margin-top: -3px;
-	margin-left: 12px;
-}
-
-.usf-datepicker-title .sf-s-wrapper .sf-s-holder:before
-{
-	height: 21px;
-}
-
-.usf-datepicker-title .sf-s-wrapper .sf-s-list
-{
-	top:21px;
-}
-
-.usf-datepicker-title .sf-s-wrapper .sf-s-list li.sf-s-default
-{
-	padding: 0px 15px;
-	font-size: 12px;
-}
-
-/*.usf-datepicker-title .sf-s-wrapper .sf-s-list li.sf-s-default
-{
-	font-size: 11px;
-}*/
 
 .sf-s-wrapper.sf-s-only-sign
 {
@@ -750,11 +700,20 @@ body .usf-datepicker-title .sf-s-wrapper .sf-s-holder a
     -moz-osx-font-smoothing: grayscale;
     cursor: pointer;
     width: 16px;
+    -webkit-transition: all 300ms ease-in-out;
+    -moz-transition: all 300ms ease-in-out;
+    -o-transition: all 300ms ease-in-out;
+    transition: all 300ms ease-in-out;
+}
+
+.sf-s-multi-element-remover:hover
+{
+	color: #333444;
 }
 
 .sf-s-multi-element-remover:after
 {
-	content: "close";
+	content: "\e5cd";
 	height: 16px;
 	width: 16px;
 	display: inline-block;
