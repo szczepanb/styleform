@@ -206,7 +206,7 @@
 /*SELECTS*/
 .sf-s-list-wrap-absolute
 {
-	position: absolute;
+	position: fixed;
 	max-width: 100%;
 }
 

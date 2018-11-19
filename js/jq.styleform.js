@@ -14,7 +14,7 @@ $.widget( "SuperForm.superForm", {
 			use: true,
 			hover:false,
 			wrapClass: null,
-			wrapTitle: null,
+			wrapTitle: true,
 			ignoredClass: 'sf-r-ignored',
 			errorClass: 'error',
 			//calbacks
@@ -90,7 +90,6 @@ $.widget( "SuperForm.superForm", {
     	
     	callback = function(mutationList, observer)
     	{
-    		console.log(1);
     		$this._initFormControls();
     	};
     	
@@ -138,6 +137,7 @@ $.widget("SuperForm.superSelect", {
 		inputClass: null,
 		wrapTitle: null,
 		ignoredClass: 'sf-s-ignore',
+		closeOnSelect: null,
 		maxListElement: null,
 		window: true,
 		//calbacks
@@ -153,12 +153,26 @@ $.widget("SuperForm.superSelect", {
     		menuUlWrap: null,
     		menuUl: null,
     		menuSearch: null,
-    		promise: null
+    		promise: null,
+    		closeHtml: true,
+			requestAnimationId: null
     	};
     	
 		var $this = this;
 		var $select = $this.element;
 
+		if($this.options.closeOnSelect === null)
+		{
+			if($this._isMultiple())
+			{
+				$this.options.closeOnSelect = false;
+			}
+			else
+			{
+				$this.options.closeOnSelect = true;
+			}
+		}
+		
 		if(!$select.prop('tagName') === 'select' || $select.hasClass($this.options.ignoredClass) || $select.hasClass('sf-s-styled'))
 		{
 			return false;
@@ -170,7 +184,7 @@ $.widget("SuperForm.superSelect", {
 		{
 			$this._setMinWidth();
 		});
-
+		
 		$this._initEvents();
 		$this._initObserver();
 		$this._update();
@@ -254,7 +268,7 @@ $.widget("SuperForm.superSelect", {
 		$this.vars.menuUlWrap = $this.vars.menu.find('.sf-s-list');
 		$this.vars.menuUl = $this.vars.menu.find('ul.sf-s-list-inner');
 		
-		$this.vars.menu.appendTo($('body'));
+		$this.vars.menu.appendTo($this.vars.wrapper);
 		
 		$this.element.children('option, optgroup').each(function(iteration, element)
 		{
@@ -420,6 +434,7 @@ $.widget("SuperForm.superSelect", {
 						if($(this).hasClass('sf-s-option-disabled'))
 						{
 							event.preventDefault();
+							event.stopPropagation();
 							return false;
 						}
 						else
@@ -437,7 +452,12 @@ $.widget("SuperForm.superSelect", {
 							{
 								if($(this).hasClass('sf-s-active'))
 								{
-									$this._close();
+									if($this.options.closeOnSelect)
+									{
+										$this._close();
+									}
+									
+									event.stopPropagation();
 									return;
 								}
 								
@@ -446,12 +466,19 @@ $.widget("SuperForm.superSelect", {
 							
 							$this._change();
 							$this._setUpList();
+							$this.vars.closeHtml = false;
 							$select.trigger('mousedown').trigger('input').trigger('change').trigger('click');
+							$this.vars.closeHtml = true;
 							$this._focusSelectWrapper();
-							$this._close();
+							
+							if($this.options.closeOnSelect)
+							{
+								$this._close();
+							}
 						}
 						
 						$this._trigger( "onSelect", event, $select);
+						event.stopPropagation();
 						return false;
 					});
 				});
@@ -812,6 +839,7 @@ $.widget("SuperForm.superSelect", {
 	{
 		var $this = this;
 		var $select = $this.element;
+		var scrollTop = $this.vars.menuUlWrap.scrollTop();
 		
 		$this.vars.menu.css({top: 'auto'});
 		$this.vars.menuUlWrap.removeClass('sf-s-overflow').css({height: 'auto', width: 'auto', top: 'auto'});
@@ -831,7 +859,7 @@ $.widget("SuperForm.superSelect", {
 		}
 		
 		var listHeight = Math.ceil($this.vars.menuUlWrap.outerHeight());
-		
+		var within = window;
 		if(this.options.window)
 		{
 			var upHeight = Math.ceil($this.vars.wrapper.offset().top-$(window).scrollTop()-searchHeight);
@@ -839,6 +867,7 @@ $.widget("SuperForm.superSelect", {
 		}
 		else
 		{
+			within = $('body');
 			var upHeight = Math.ceil($this.vars.wrapper.offset().top-searchHeight);
 			var downHeight = Math.ceil($('body').height()-$this.vars.wrapper.offset().top-searchHeight);
 		}	
@@ -863,9 +892,10 @@ $.widget("SuperForm.superSelect", {
 				    var maxHeight = Math.ceil(maxelement*singleHeight);
 					
 				    $this.vars.menuUlWrap.height(maxHeight).addClass('sf-s-overflow');
-				    
-				    verticalAlignMy = 'top';
-				    verticalAlignAt = 'top-'+(maxHeight+searchHeight+1);
+					
+					verticalAlignMy = 'top';
+					verticalAlignAt = 'top-'+(maxHeight+searchHeight+1);
+					
 				    positionClass += ' sf-s-to-top';
                 }
                 else
@@ -885,8 +915,9 @@ $.widget("SuperForm.superSelect", {
             }
             else
             {            	
-            	verticalAlignMy = 'top';
-			    verticalAlignAt = 'top-'+(listHeight+searchHeight-1);
+				verticalAlignMy = 'top';
+				verticalAlignAt = 'top-'+(listHeight+searchHeight-1);
+			    
 			    positionClass += ' sf-s-to-top';
             }
 		}
@@ -941,7 +972,8 @@ $.widget("SuperForm.superSelect", {
 		$this.vars.menu.position({
 			'my': horizontalAlign+" "+verticalAlignMy,
 			'at': horizontalAlign+" "+verticalAlignAt,
-			'of': $this.vars.wrapper
+			'of': $this.vars.wrapper,
+			'within': within 
 		}).addClass(positionClass);
 		
 		var zIndex = $this.vars.menu.css('z-index');
@@ -955,6 +987,41 @@ $.widget("SuperForm.superSelect", {
 		}
 		
 		$this.vars.menu.removeClass('sf-show-visible');
+		$this.vars.menuUlWrap.scrollTop(scrollTop);
+		
+		var openTopOffset = $this.vars.wrapper.offset().top-$(window).scrollTop();
+		var doOnScroll = function()
+		{
+			scrollTop = $(window).scrollTop();
+			if($this.vars.wrapper.offset().top-scrollTop !== openTopOffset)
+			{
+				if($this.options.window)
+				{
+					$this._close();
+				}
+				else
+				{
+					$this.vars.menu.position({
+						'my': horizontalAlign+" "+verticalAlignMy,
+						'at': horizontalAlign+" "+verticalAlignAt,
+						'of': $this.vars.wrapper,
+						'within': within 
+					}).addClass(positionClass);
+					
+					openTopOffset = $this.vars.wrapper.offset()-scrollTop;
+				}
+			}
+			else
+			{
+				openTopOffset = $this.vars.wrapper.offset().top-scrollTop;
+			}
+			
+			if($this.vars.requestAnimationId !== null)
+				$this.vars.requestAnimationId = requestAnimationFrame(doOnScroll);
+		};
+		
+		if($this.vars.requestAnimationId === null)
+			$this.vars.requestAnimationId = requestAnimationFrame(doOnScroll);
 	},
 	
 	
@@ -978,7 +1045,7 @@ $.widget("SuperForm.superSelect", {
 			{
 				e.preventDefault();
 				return false;
-			}).off('keyup.'+this.eventNamespace).on('keyup.'+this.eventNamespace, function()
+			}).off('keyup.'+this.eventNamespace).on('keyup.'+this.eventNamespace, function(e)
 			{
 				var reg = new RegExp($(this).val(), 'i');
 				
@@ -1026,6 +1093,8 @@ $.widget("SuperForm.superSelect", {
 				}
 				
 				$this._setUpList();
+				e.preventDefault();
+				return false;
 			});
 		}
 	},
@@ -1330,7 +1399,8 @@ $.widget("SuperForm.superSelect", {
 		
 		$('html').on('click.'+this.eventNamespace, function()
 		{
-			$this._close();
+			if($this.vars.closeHtml)
+				$this._close();
 		});
 		
 		$(this).addClass('sf-s-hover');
@@ -1349,11 +1419,18 @@ $.widget("SuperForm.superSelect", {
 		});
 	},
 	
-	_close:function(caller)
+	_close:function()
 	{
 		$('html').off('click.'+this.eventNamespace).off('mouseenter.'+this.eventNamespace);
 		$(window).off('scroll.'+this.eventNamespace).off('resize.'+this.eventNamespace);
 		var $this = this;
+		
+		if($this.vars.requestAnimationId !== null)
+		{
+			cancelAnimationFrame($this.vars.requestAnimationId);
+			$this.vars.requestAnimationId = null;
+		}
+		
 		if(!$this.element.hasClass('sf-s-list-is-open'))
 			return false;
 		
@@ -1377,7 +1454,7 @@ $.widget("SuperForm.superRadio", {
 	options: {
 		hover:false,
 		wrapClass: null,
-		wrapTitle: null,
+		wrapTitle: true,
 		ignoredClass: 'sf-r-ignored',
 		errorClass: 'error',
 		//calbacks
@@ -1780,7 +1857,7 @@ $.widget("SuperForm.superCheckbox", {
 				$input.closest('.sf-ch-wrapper').attr('style', $input.attr('style'));
 			
 			$input.closest('.sf-ch-wrapper label').prepend('<span tabindex="0" class="sf-ch-default">');
-			$input.closest('.sf-ch-wrapper').find('.sf-ch-default').append('<span>');
+			$input.closest('.sf-ch-wrapper').find('.sf-ch-default').append('<span tabindex="-1">');
 			$input.addClass('sf-ch-styled sf-hide');
 		}
     },
